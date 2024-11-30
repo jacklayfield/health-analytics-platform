@@ -22,3 +22,9 @@ Create an application that ingests and pre-processes data to be used to train ma
 │   ├── frontend/
 │   ├── static/ 
 ```
+
+What we will use: 
+
+- Terraform for provisioning cloud resources
+- Amazon SageMaker or Airflow for ML pipeline orchestration (Haven't decided yet)
+- Apache Spark for data processing
