@@ -1,22 +1,25 @@
 import os
 import requests
-import zipfile
+import json
 
-DATA_DIR = "/opt/airflow/data/raw/openfda/"
-ZIP_URL = "https://download.open.fda.gov/drug/event/drug-event-0001-of-0001.json.zip"
+def download_openfda_data(api_url: str = "https://api.fda.gov/drug/event.json", output_path: str = "/opt/airflow/data/raw/events.json", limit: int = 100):
+    print(f"Fetching openFDA data from {api_url}...")
 
-def download_openfda_data():
-    os.makedirs(DATA_DIR, exist_ok=True)
-    zip_path = os.path.join(DATA_DIR, "drug-event-latest.zip")
+    params = {"limit": limit}
+    try:
+        response = requests.get(api_url, params=params, timeout=30)
+        response.raise_for_status()
 
-    print(f"Downloading from {ZIP_URL}...")
-    response = requests.get(ZIP_URL, stream=True)
-    with open(zip_path, "wb") as f:
-        for chunk in response.iter_content(chunk_size=1024):
-            f.write(chunk)
+        data = response.json()
 
-    print("Unzipping...")
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(DATA_DIR)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, "w") as f:
+            json.dump(data, f, indent=2)
 
-    print(f"Data extracted to {DATA_DIR}")
+        print(f"Saved openFDA API data to {output_path}")
+
+    except requests.exceptions.HTTPError as errh:
+        raise Exception(f"HTTP Error: {errh}")
+    except requests.exceptions.RequestException as err:
+        raise Exception(f"Request failed: {err}")
+
