@@ -22,4 +22,3 @@ def download_openfda_data(api_url: str = "https://api.fda.gov/drug/event.json", 
         raise Exception(f"HTTP Error: {errh}")
     except requests.exceptions.RequestException as err:
         raise Exception(f"Request failed: {err}")
-

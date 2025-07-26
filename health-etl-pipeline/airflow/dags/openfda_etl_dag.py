@@ -5,11 +5,11 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime
 import sys
 
-sys.path.append('/opt/airflow')  # for containerized scripts
+sys.path.append('/opt/airflow')
 
 from etl.openfda.extract import download_openfda_data
-# from etl.openfda.transform import transform_openfda_data
-# from etl.openfda.load import load_to_snowflake
+from etl.openfda.transform import transform_openfda_data
+from etl.openfda.load import load_openfda_data_to_postgres
 
 default_args = {
     'owner': 'airflow',
@@ -23,14 +23,14 @@ with DAG('openfda_etl', default_args=default_args, schedule_interval='@monthly',
         python_callable=download_openfda_data,
     )
 
-    # transform = PythonOperator(
-    #     task_id='transform_openfda',
-    #     python_callable=transform_openfda_data,
-    # )
+    transform = PythonOperator(
+        task_id='transform_openfda',
+        python_callable=transform_openfda_data,
+    )
 
-    # load = PythonOperator(
-    #     task_id='load_openfda',
-    #     python_callable=load_to_snowflake,
-    # )
+    load = PythonOperator(
+        task_id='load_openfda',
+        python_callable=load_openfda_data_to_postgres,
+    )
 
-    extract #>> transform >> load
+    extract >> transform >> load
