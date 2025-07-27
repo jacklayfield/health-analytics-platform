@@ -1,4 +1,4 @@
-apache-airflow-providers-snowflake
-snowflake-connector-python
+apache-airflow==2.9.0
+requests
 pandas
-pyyaml
+sqlalchemy

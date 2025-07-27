@@ -1,25 +1,33 @@
+import os
 import pandas as pd
 from sqlalchemy import create_engine
-import os
+from sqlalchemy.exc import SQLAlchemyError
+
 
 def load_openfda_data_to_postgres(
-    csv_path="/opt/airflow/data/processed/events.csv",
-    db_uri="postgresql+psycopg2://airflow:airflow@postgres:5432/airflow",
-    table_name="openfda_events"
-):
-    print(f"Loading data from {csv_path} into {table_name}...")
+    csv_path: str = "/opt/airflow/data/processed/events.csv",
+    db_uri: str = "postgresql+psycopg2://airflow:airflow@postgres:5432/airflow",
+    table_name: str = "openfda_events"
+) -> None:
+    """
+    Load processed OpenFDA CSV data into a PostgreSQL table using SQLAlchemy.
+    """
+    print(f"📥 Starting data load to Postgres: {csv_path} → {table_name}")
 
     if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"{csv_path} does not exist")
+        raise FileNotFoundError(f"File not found: {csv_path}")
 
-    # Read transformed CSV
-    df = pd.read_csv(csv_path)
+    try:
+        df = pd.read_csv(csv_path)
+        if df.empty:
+            raise ValueError("CSV file is empty. Aborting load.")
 
-    # Create SQLAlchemy engine
-    engine = create_engine(db_uri)
+        engine = create_engine(db_uri)
 
-    # Load into DB
-    with engine.begin() as conn:
-        df.to_sql(table_name, conn, if_exists="replace", index=False)
+        with engine.begin() as conn:
+            df.to_sql(table_name, conn, if_exists="replace", index=False)
+        
+        print(f"Successfully loaded {len(df)} records into '{table_name}'.")
 
-    print(f"✅ Loaded {len(df)} rows into {table_name}")
+    except (SQLAlchemyError, ValueError, pd.errors.ParserError) as e:
+        raise RuntimeError(f"Failed to load data into Postgres: {e}")
