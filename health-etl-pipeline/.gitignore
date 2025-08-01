@@ -12,6 +12,7 @@ plugins/operators/__pycache__/
 data/raw/
 data/output/
 data/tmp/
+data/processed
 
 # Docker and system files
 *.log

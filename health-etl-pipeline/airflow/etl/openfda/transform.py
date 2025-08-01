@@ -2,6 +2,14 @@ import json
 import pandas as pd
 import os
 
+def clean_first_value(value):
+    """Safely extract and clean the first item of a list, if present."""
+    if isinstance(value, list) and value:
+        return value[0].strip()
+    if isinstance(value, str):
+        return value.strip()
+    return None
+
 def transform_openfda_data(
     input_path="/opt/airflow/data/raw/events.json",
     output_path="/opt/airflow/data/processed/events.csv"
@@ -34,12 +42,12 @@ def transform_openfda_data(
 
                 rows.append({
                     **base,
-                    "reaction": reaction_name,
-                    "medicinalproduct": drug.get("medicinalproduct"),
-                    "drugauthorizationnumb": drug.get("drugauthorizationnumb"),
-                    "brand_name": ", ".join(openfda.get("brand_name", [])),
-                    "manufacturer_name": ", ".join(openfda.get("manufacturer_name", [])),
-                    "product_ndc": ", ".join(openfda.get("product_ndc", []))
+                    "reaction": reaction_name.strip() if reaction_name else None,
+                    "medicinalproduct": drug.get("medicinalproduct", "").strip(),
+                    "drugauthorizationnumb": drug.get("drugauthorizationnumb", "").strip(),
+                    "brand_name": clean_first_value(openfda.get("brand_name")),
+                    "manufacturer_name": clean_first_value(openfda.get("manufacturer_name")),
+                    "product_ndc": clean_first_value(openfda.get("product_ndc"))
                 })
 
     df = pd.DataFrame(rows)

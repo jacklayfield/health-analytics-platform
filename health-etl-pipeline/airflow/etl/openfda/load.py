@@ -12,7 +12,7 @@ def load_openfda_data_to_postgres(
     """
     Load processed OpenFDA CSV data into a PostgreSQL table using SQLAlchemy.
     """
-    print(f"📥 Starting data load to Postgres: {csv_path} → {table_name}")
+    print(f"Starting data load to Postgres: {csv_path} → {table_name}")
 
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"File not found: {csv_path}")
