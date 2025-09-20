@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 import pandas as pd
-from load_interface import DataLoader
+from etl.common.base_loader import DataLoader
 
 class PostgresLoader(DataLoader):
     def __init__(self, db_uri, table_name):

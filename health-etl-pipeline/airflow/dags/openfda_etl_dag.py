@@ -9,7 +9,7 @@ sys.path.append('/opt/airflow')
 
 from etl.openfda.extract import download_openfda_data
 from etl.openfda.transform import transform_openfda_data
-from etl.openfda.load import load_openfda_data_to_postgres
+from etl.openfda.load import load_openfda_data
 
 default_args = {
     'owner': 'airflow',
@@ -30,7 +30,7 @@ with DAG('openfda_etl', default_args=default_args, schedule_interval='@monthly',
 
     load = PythonOperator(
         task_id='load_openfda',
-        python_callable=load_openfda_data_to_postgres,
+        python_callable=load_openfda_data,
     )
 
     extract >> transform >> load

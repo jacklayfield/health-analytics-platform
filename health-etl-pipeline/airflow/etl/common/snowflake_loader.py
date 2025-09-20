@@ -1,4 +1,4 @@
-from airflow.etl.common.base_loader import DataLoader
+from etl.common.base_loader import DataLoader
 import pandas as pd
 
 class SnowflakeLoader(DataLoader):
