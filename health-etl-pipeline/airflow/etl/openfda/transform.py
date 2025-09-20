@@ -51,6 +51,17 @@ def transform_openfda_data(
                 })
 
     df = pd.DataFrame(rows)
+
+    # Deduplicate
+    df = df.drop_duplicates(
+        subset=[
+            "safetyreportid",
+            "reaction",
+            "medicinalproduct",
+            "drugauthorizationnumb"
+        ]
+    )
+
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
     print(f"Transformed data saved to {output_path}")

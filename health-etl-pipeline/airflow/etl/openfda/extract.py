@@ -1,24 +1,41 @@
 import os
 import requests
 import json
+import time
 
-def download_openfda_data(api_url: str = "https://api.fda.gov/drug/event.json", output_path: str = "/opt/airflow/data/raw/events.json", limit: int = 100):
+def download_openfda_data(
+    api_url="https://api.fda.gov/drug/event.json",
+    output_path="/opt/airflow/data/raw/events.json",
+    limit=100,
+    max_records=1000
+):
     print(f"Fetching openFDA data from {api_url}...")
 
-    params = {"limit": limit}
-    try:
+    all_results = []
+    skip = 0
+
+    while True:
+        params = {"limit": limit, "skip": skip}
         response = requests.get(api_url, params=params, timeout=30)
         response.raise_for_status()
+        page = response.json()
 
-        data = response.json()
+        results = page.get("results", [])
+        if not results:
+            break
 
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, "w") as f:
-            json.dump(data, f, indent=2)
+        all_results.extend(results)
 
-        print(f"Saved openFDA API data to {output_path}")
+        if max_records and len(all_results) >= max_records:
+            break
 
-    except requests.exceptions.HTTPError as errh:
-        raise Exception(f"HTTP Error: {errh}")
-    except requests.exceptions.RequestException as err:
-        raise Exception(f"Request failed: {err}")
+        skip += limit
+
+        # Sleep to avoid setting off rquests per second violations
+        time.sleep(1)
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w") as f:
+        json.dump({"results": all_results}, f, indent=2)
+
+    print(f"Saved {len(all_results)} records to {output_path}")
