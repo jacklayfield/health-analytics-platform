@@ -15,3 +15,6 @@ venv/
 
 # VSCode settings
 .vscode/
+
+# Models
+models/

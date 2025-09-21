@@ -1,6 +1,4 @@
-"""
-Train a baseline ML model on OpenFDA data to predict whether an adverse event is serious.
-"""
+# Train baseline ML model on OpenFDA data to predict whether an adverse event is serious.
 
 import os
 import pandas as pd
@@ -11,6 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import classification_report
+from sklearn.impute import SimpleImputer
 import joblib
 
 DB_URI = os.getenv(
@@ -33,13 +32,18 @@ features = ["patientonsetage", "patientsex", "reaction", "brand_name"]
 X = df[features]
 y = df["serious"]
 
-categorical = ["patientsex", "reaction", "brand_name"]
 numeric = ["patientonsetage"]
+categorical = ["patientsex", "reaction", "brand_name"]
 
 preprocessor = ColumnTransformer(
     transformers=[
-        ("num", "passthrough", numeric),
-        ("cat", OneHotEncoder(handle_unknown="ignore"), categorical)
+        ("num", Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+        ]), numeric),
+        ("cat", Pipeline([
+            ("imputer", SimpleImputer(strategy="most_frequent")),
+            ("onehot", OneHotEncoder(handle_unknown="ignore"))
+        ]), categorical),
     ]
 )
 
@@ -65,4 +69,4 @@ print(classification_report(y_test, y_pred))
 # Artifact
 os.makedirs("models", exist_ok=True)
 joblib.dump(model, "models/openfda_serious_predictor.joblib")
-print("✅ Model saved to models/openfda_serious_predictor.joblib")
+print("Model saved to models/openfda_serious_predictor.joblib")
