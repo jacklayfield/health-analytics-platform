@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Airflow __pycache__
+airflow/dags/__pycache__/
+airflow/etl/__pycache__/
+plugins/operators/__pycache__/
+
+# Data folders
+data/raw/
+data/output/
+data/tmp/
+data/processed
+
+# Docker and system files
+*.log
+*.env
+*.pid
+
+# VSCode settings
+.vscode/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python virtual environment folders
+venv/
+.env/
+.envrc/
+
+# Models
+models/
