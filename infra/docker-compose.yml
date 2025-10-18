@@ -40,9 +40,10 @@ services:
       - postgres
     command: >
       bash -c "pip install -r /requirements-etl.txt &&
-               pip install -r /requirements-ml.txt &&
                airflow db init &&
                airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"
+    networks:
+      - health-net
 
   airflow-webserver:
     <<: *airflow-common
@@ -53,8 +54,9 @@ services:
       - "8080:8080"
     command: >
       bash -c "pip install -r /requirements-etl.txt &&
-               pip install -r /requirements-ml.txt &&
                airflow webserver"
+    networks:
+      - health-net
 
   airflow-scheduler:
     <<: *airflow-common
@@ -63,8 +65,9 @@ services:
       - airflow-init
     command: >
       bash -c "pip install -r /requirements-etl.txt &&
-               pip install -r /requirements-ml.txt &&
                airflow scheduler"
+    networks:
+      - health-net
 
   postgres:
     image: postgres:13
@@ -76,6 +79,8 @@ services:
       - postgres-db-volume:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - health-net
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -93,7 +98,14 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
       - ./pgadmin-config/servers.json:/pgadmin4/servers.json
+    networks:
+      - health-net
 
 volumes:
   postgres-db-volume:
   pgadmin-data:
+
+networks:
+  health-net:
+    external: true
+    name: health-net
