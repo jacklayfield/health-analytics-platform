@@ -1,0 +1,85 @@
+# ML Pipeline Configuration
+data:
+  warehouse_uri: "${WAREHOUSE_DB_URI:postgresql+psycopg2://airflow:airflow@localhost:5432/airflow}"
+  tables:
+    openfda_events: "openfda_events"
+    synthea_events: "synthea_events"
+  
+features:
+  serious_prediction:
+    target: "serious"
+    numeric_features: ["patientonsetage"]
+    categorical_features: ["patientsex", "reaction", "brand_name"]
+    text_features: []
+  
+  reaction_prediction:
+    target: "reaction"
+    numeric_features: ["patientonsetage"]
+    categorical_features: ["patientsex", "brand_name", "serious"]
+    text_features: []
+
+models:
+  serious_prediction:
+    algorithms:
+      - name: "logistic_regression"
+        class: "sklearn.linear_model.LogisticRegression"
+        params:
+          max_iter: 1000
+          random_state: 42
+          class_weight: "balanced"
+      
+      - name: "random_forest"
+        class: "sklearn.ensemble.RandomForestClassifier"
+        params:
+          n_estimators: 300
+          max_depth: null
+          class_weight: "balanced"
+          random_state: 42
+          n_jobs: -1
+      
+      - name: "gradient_boosting"
+        class: "sklearn.ensemble.GradientBoostingClassifier"
+        params:
+          n_estimators: 300
+          learning_rate: 0.1
+          max_depth: 3
+          random_state: 42
+
+training:
+  test_size: 0.2
+  validation_size: 0.2
+  random_state: 42
+  stratify: true
+  cross_validation:
+    cv_folds: 5
+    scoring: ["accuracy", "precision", "recall", "f1", "roc_auc"]
+
+evaluation:
+  metrics:
+    classification:
+      - "accuracy"
+      - "precision_macro"
+      - "recall_macro"
+      - "f1_macro"
+      - "roc_auc"
+    regression:
+      - "mse"
+      - "mae"
+      - "r2"
+
+mlflow:
+  tracking_uri: "${MLFLOW_TRACKING_URI:http://localhost:5000}"
+  experiment_name: "health_analytics"
+  model_registry_name: "health_models"
+
+paths:
+  data: "data/"
+  models: "models/"
+  logs: "logs/"
+  artifacts: "artifacts/"
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/ml_pipeline.log"
+

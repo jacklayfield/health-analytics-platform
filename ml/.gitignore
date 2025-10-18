@@ -18,3 +18,9 @@ venv/
 
 # Models
 models/
+
+NOTES.md
+
+.ipynb_checkpoints
+
+*.ipynb
