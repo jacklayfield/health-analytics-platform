@@ -17,6 +17,7 @@ This monorepo unifies all major components:
 
 ## Repository Structure
 
+```
 health-analytics-platform
 ├───health-etl-pipeline
 │   ├───airflow
@@ -42,7 +43,7 @@ health-analytics-platform
         ├───common
         ├───reaction_prediction
         └───serious_prediction
-
+```
 ---
 
 ## Components
