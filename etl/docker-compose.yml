@@ -1,1 +1,68 @@
-# Common infra moved to infra/docker-compose.yml. Will add etl specific set up here if needed.
+x-airflow-common:  
+  &airflow-common
+  image: apache/airflow:2.9.0
+  environment:
+    &airflow-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'True'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+    AIRFLOW__CORE__LOGGING_LEVEL: INFO
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'True'
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_WEBSERVER_SECRET_KEY}
+  volumes:
+    # Mount ETL project
+    - ./airflow/dags:/opt/airflow/dags/etl
+    - ./airflow/etl:/opt/airflow/etl
+    - ./plugins:/opt/airflow/plugins/etl
+    - ./include:/opt/airflow/include/etl
+
+    # Mount ML project
+    # - ../ml/dags:/opt/airflow/dags/ml
+    # - ../ml/models:/opt/airflow/models
+    # - ../ml/plugins:/opt/airflow/plugins/ml
+    # - ../ml/include:/opt/airflow/include/ml
+
+    #  data folder (optional)
+    - ./data:/opt/airflow/data
+
+    # requirements (optional)
+    - ./requirements.txt:/requirements-etl.txt
+  user: "${AIRFLOW_UID:-50000}:0"
+
+services:
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow-init
+    command: >
+      bash -c "pip install -r /requirements-etl.txt &&
+               airflow db init &&
+               airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"
+    networks:
+      - health-net
+
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow-webserver
+    ports:
+      - "8080:8080"
+    command: >
+      bash -c "pip install -r /requirements-etl.txt &&
+               airflow webserver"
+    networks:
+      - health-net
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow-scheduler
+    command: >
+      bash -c "pip install -r /requirements-etl.txt &&
+               airflow scheduler"
+    networks:
+      - health-net
+
+networks:
+  health-net:
+    external: true
+    name: health-net
