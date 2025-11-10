@@ -1,0 +1,15 @@
+services:
+  dashboard:
+    build: ./backend
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - POSTGRES_URI=postgresql://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW_BASE=http://airflow-webserver:8080/api/v1
+      - AIRFLOW_USERNAME=airflow
+      - AIRFLOW_PASSWORD=airflow
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+      - mlflow
+      - airflow-webserver

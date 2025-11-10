@@ -1,0 +1,8 @@
+flask
+flask-cors
+pyyaml
+mlflow
+psycopg2-binary
+pandas
+requests
+gunicorn
