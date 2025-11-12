@@ -1,6 +1,13 @@
 services:
   dashboard:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    working_dir: /app
+    command: python app.py
+    volumes:
+      - ./backend:/app
+      - ${PWD}/../ml/config:/app/ml/config
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
       - POSTGRES_URI=postgresql://airflow:airflow@postgres:5432/airflow
@@ -8,8 +15,10 @@ services:
       - AIRFLOW_USERNAME=airflow
       - AIRFLOW_PASSWORD=airflow
     ports:
-      - "5000:5000"
-    depends_on:
-      - postgres
-      - mlflow
-      - airflow-webserver
+      - "8001:8001"
+    networks:
+      - health-net
+
+networks:
+  health-net:
+    external: true

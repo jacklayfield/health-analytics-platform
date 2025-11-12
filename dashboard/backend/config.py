@@ -2,8 +2,7 @@ import os
 from pathlib import Path
 import yaml
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-ML_CONFIG_PATH = os.getenv("ML_CONFIG_PATH", BASE_DIR / "ml" / "config" / "config.yaml")
+ML_CONFIG_PATH = Path("/app/ml/config/config.yaml")
 
 def load_ml_config():
     with open(ML_CONFIG_PATH, "r") as fh:
