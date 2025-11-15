@@ -1,10 +1,11 @@
 services:
   postgres:
+    env_file: .env
     image: postgres:13
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_USER: ${POSTGRES_USER:-airflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airflow}
+      POSTGRES_DB: ${POSTGRES_DB:-airflow}
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     ports:
@@ -13,14 +14,15 @@ services:
       - health-net
 
   pgadmin:
+    env_file: .env
     image: dpage/pgadmin4:latest
     container_name: pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-password}
       PGADMIN_CONFIG_SERVER_MODE: "True"
-      PGADMIN_DEFAULT_SERVER_PASSWORD: password
+      PGADMIN_DEFAULT_SERVER_PASSWORD: ${PGADMIN_DEFAULT_SERVER_PASSWORD:-password}
     ports:
       - "5050:80"
     depends_on:

@@ -1,0 +1,46 @@
+# NOTE: This file is an index / documentation for the repository's
+# Docker Compose setups. It contains a human-friendly listing of
+# per-component compose files and is NOT intended to be directly
+# consumed by `docker compose` when it contains non-standard keys.
+#
+# To run the full stack, use the helper script `scripts/start-all.sh`
+# or invoke `docker compose` with multiple `-f` flags, for example:
+#
+#   docker compose -f infra/docker-compose.yml \
+#     -f etl/docker-compose.yml \
+#     -f ml/docker-compose.yml \
+#     -f dashboard/docker-compose.yml up --build
+#
+# The non-standard `include:` block that used to live below has been
+# commented out to keep this file parseable by Docker Compose. See
+# each subproject folder for its own `docker-compose.yml` and `.env`.
+
+version: "3.9"
+
+# Included compose files (human-readable reference). These lines are
+# commented out on purpose because `include:` is not part of the
+# Docker Compose spec; the helper scripts in `scripts/` perform the
+# canonical merge at runtime.
+# include:
+#   - path: ./infra/docker-compose.yml
+#     project: infra
+#     profiles: ["infra"]
+#
+#   - path: ./etl/docker-compose.yml
+#     project: etl
+#     profiles: ["etl"]
+#
+#   - path: ./ml/docker-compose.yml
+#     project: ml
+#     profiles: ["ml"]
+#
+#   - path: ./dashboard/docker-compose.yml
+#     project: dashboard
+#     profiles: ["dashboard"]
+
+networks:
+  health-net:
+    external: true
+    name: health-net
+
+services: {}

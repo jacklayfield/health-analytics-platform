@@ -1,5 +1,6 @@
 x-airflow-common:  
   &airflow-common
+  env_file: .env
   image: apache/airflow:2.9.0
   environment:
     &airflow-env
@@ -18,12 +19,6 @@ x-airflow-common:
     - ./plugins:/opt/airflow/plugins/etl
     - ./include:/opt/airflow/include/etl
 
-    # Mount ML project
-    # - ../ml/dags:/opt/airflow/dags/ml
-    # - ../ml/models:/opt/airflow/models
-    # - ../ml/plugins:/opt/airflow/plugins/ml
-    # - ../ml/include:/opt/airflow/include/ml
-
     #  data folder (optional)
     - ./data:/opt/airflow/data
 
@@ -38,7 +33,7 @@ services:
     command: >
       bash -c "pip install -r /requirements-etl.txt &&
                airflow db init &&
-               airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"
+               airflow users create --username ${AIRFLOW_ADMIN_USER:-admin} --password ${AIRFLOW_ADMIN_PASSWORD:-admin} --firstname Admin --lastname User --role Admin --email admin@example.com"
     networks:
       - health-net
 

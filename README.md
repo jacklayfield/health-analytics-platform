@@ -87,6 +87,11 @@ This will launch:
 - Airflow (ETL orchestrator)
 - pgAdmin (database management UI)
 
+NOTE: IF needed to reset pgadmin account:
+docker compose down
+docker volume rm health-analytics-platform_pgadmin-data
+docker compose up -d
+
 ### 3. Run the ETL Pipeline
 Once Airflow is up, open the UI at http://localhost:8080 and trigger the DAG:
 openfda_etl_dag
@@ -130,6 +135,58 @@ ml/models/openfda_serious_predictor.joblib
 - Ensure Python 3.10+ and Docker are installed.
 - Environment variables are stored in `.env` files inside each module (e.g. `etl/.env`, `ml/.env`).
 - Common utilities are located in `ml/pipelines/common/`.
+
+**Environment Files (per-component `.env`)**:
+
+- **Pattern**: each subproject has a component-local `.env` file (`ml/.env`, `etl/.env`, `infra/.env`, `dashboard/.env`) that contains the environment variables used by that component's `docker-compose`. This keeps components self-contained and makes it easy to run a single component in isolation.
+- **Do not commit real secrets**: all `.env` files should contain non-sensitive defaults or placeholders. Add any real, sensitive secrets to your team's secrets manager or use Docker secrets for production. The repository's top-level `.gitignore` already excludes `.env` files.
+
+- `ml/.env`: `WAREHOUSE_DB_URI`, `MLFLOW_TRACKING_URI`
+- `etl/.env`: `AIRFLOW__*` settings (e.g., `AIRFLOW__CORE__FERNET_KEY`), `AIRFLOW_UID`, `AIRFLOW_ADMIN_USER`, `AIRFLOW_ADMIN_PASSWORD`
+- `infra/.env`: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `PGADMIN_DEFAULT_SERVER_PASSWORD`
+- `dashboard/.env`: `MLFLOW_TRACKING_URI`, `POSTGRES_URI`, `AIRFLOW_BASE`, `AIRFLOW_USERNAME`, `AIRFLOW_PASSWORD`
+
+**How to use (local dev)**:
+       - Create or edit the component `.env` files with appropriate values. For example:
+
+```bash
+cp ml/.env.example ml/.env
+```
+
+       - Start a single component from its directory:
+
+```bash
+cd ml
+docker compose up --build
+```
+
+       - Or run a component compose file from the repo root (compose will read the component's `.env` file):
+
+```bash
+docker compose -f ml/docker-compose.yml up --build
+```
+
+       - Validate compose before bringing services up:
+
+```bash
+docker compose -f ml/docker-compose.yml config
+```
+
+**Production recommendations**:
+- Move the most sensitive values (DB passwords, Airflow Fernet key, API keys) to a secrets manager or Docker secrets and reference them in a `docker-compose.prod.yml`.
+- Keep `.env` files as lightweight local overrides only. Use CI/CD pipeline secrets for build/deploy-time configuration.
+
+
+# Call docker compose directly and merge files:
+```bash
+docker compose \
+       -f docker-compose.yml \
+       -f infra/docker-compose.yml \
+       -f etl/docker-compose.yml \
+       -f ml/docker-compose.yml \
+       -f dashboard/docker-compose.yml \
+       up --build
+```
 
 ---
 

@@ -1,5 +1,6 @@
 services:
   dashboard:
+    env_file: .env
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -9,11 +10,11 @@ services:
       - ./backend:/app
       - ${PWD}/../ml/config:/app/ml/config
     environment:
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
-      - POSTGRES_URI=postgresql://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW_BASE=http://airflow-webserver:8080/api/v1
-      - AIRFLOW_USERNAME=airflow
-      - AIRFLOW_PASSWORD=airflow
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
+      - POSTGRES_URI=${POSTGRES_URI}
+      - AIRFLOW_BASE=${AIRFLOW_BASE}
+      - AIRFLOW_USERNAME=${AIRFLOW_USERNAME}
+      - AIRFLOW_PASSWORD=${AIRFLOW_PASSWORD}
     ports:
       - "8001:8001"
     networks:

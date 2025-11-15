@@ -3,8 +3,9 @@ version: '3.8'
 services:
   # MLflow Tracking Server
   mlflow:
+    env_file: .env
     build:
-      context: .
+      context: ./ml
       dockerfile: Dockerfile.mlflow
     container_name: mlflow-server
     ports:
@@ -29,22 +30,23 @@ services:
 
   # ML Pipeline API Server
   ml-api:
+    env_file: .env
     build:
-      context: .
+      context: ./ml
       target: production
     container_name: ml-api-server
     ports:
       - "8000:8000"
     environment:
-      - WAREHOUSE_DB_URI=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - WAREHOUSE_DB_URI=${WAREHOUSE_DB_URI}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
       - PYTHONPATH=/app
     volumes:
-      - .:/app
-      - ./models:/app/models
-      - ./logs:/app/logs
-      - ./artifacts:/app/artifacts
-      - ./config:/app/config
+      - ./ml:/app
+      - ./ml/models:/app/models
+      - ./ml/logs:/app/logs
+      - ./ml/artifacts:/app/artifacts
+      - ./ml/config:/app/config
     working_dir: /app
     command: bash -c "pip install --no-cache-dir optuna[mlflow] optuna-integration[mlflow] mlflow pandas scikit-learn joblib psycopg2-binary fastapi uvicorn && uvicorn src.serving.model_server:create_app --host 0.0.0.0 --port 8000"
     networks:
@@ -53,17 +55,18 @@ services:
 
   # Jupyter Notebook for development
   jupyter:
+    env_file: .env
     build:
-      context: .
+      context: ./ml
       target: development
     container_name: ml-jupyter
     ports:
       - "8888:8888"
     environment:
-      - WAREHOUSE_DB_URI=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - WAREHOUSE_DB_URI=${WAREHOUSE_DB_URI}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
     volumes:
-      - .:/app
+      - ./ml:/app
       - jupyter_data:/home/jovyan/work
     command: >
       bash -c "pip install jupyter && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''"
