@@ -1,3 +1,3 @@
 ## Data
 
-This folder will contain any processed/raw data
+This folder will contain any processed/raw data (git ignored by default)
