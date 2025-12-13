@@ -26,3 +26,6 @@ venv/
 
 # VSCode settings
 .vscode/
+
+# synthea data
+airflow/etl/synthea/data
