@@ -1,38 +1,30 @@
-# Synthea ETL DAG (Will need to reevaluate once Synthea ETL structure is finalized)
-# # Synthea ETL DAG
+# Synthea DAG
 
-# from airflow import DAG
-# from airflow.operators.python import PythonOperator
-# from datetime import datetime
-# import sys
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime
+import sys
 
-# sys.path.append('/opt/airflow')
+sys.path.append('/opt/airflow')
 
-# from etl.synthea.extract import download_synthea_data
-# from etl.synthea.transform import transform_synthea_data
-# from etl.synthea.load import load_synthea_data
+from etl.synthea.transform.patients import transform_patients
+from etl.synthea.load.postgres import load_patients
 
-# default_args = {
-#     'owner': 'airflow',
-#     'start_date': datetime(2024, 1, 1),
-# }
+default_args = {
+    'owner': 'airflow',
+    'start_date': datetime(2024, 1, 1),
+}
 
-# with DAG('synthea_etl', default_args=default_args, schedule_interval='@monthly', catchup=False) as dag:
+with DAG('synthea_etl', default_args=default_args, schedule_interval='@monthly', catchup=False) as dag:
 
-#     extract = PythonOperator(
-#         task_id='extract_synthea',
-#         python_callable=download_synthea_data,
-#     )
+    transform_patients_task = PythonOperator(
+        task_id='transform_patients',
+        python_callable=transform_patients,
+    )
 
-#     transform = PythonOperator(
-#         task_id='transform_synthea',
-#         python_callable=transform_synthea_data,
-#     )
+    load_patients_task = PythonOperator(
+        task_id='load_patients',
+        python_callable=load_patients,
+    )
 
-#     load = PythonOperator(
-#         task_id='load_synthea',
-#         python_callable=load_synthea_data,
-#     )
-
-#     extract >> transform >> load
-# # Synthea dag (To be implemented)
+    transform_patients_task >> load_patients_task
