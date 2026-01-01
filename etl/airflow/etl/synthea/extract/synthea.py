@@ -1,18 +1,8 @@
-import subprocess
 from pathlib import Path
 
 def extract_synthea(**kwargs):
-    """Run Synthea to generate FHIR data."""
-    script_dir = Path(__file__).resolve().parent.parent
-    run_synthea_path = script_dir / "run_synthea.py"
-    
-    result = subprocess.run([
-        "python", str(run_synthea_path),
-        "-p", "100" 
-    ], capture_output=True, text=True, cwd=script_dir)
-    
-    if result.returncode != 0:
-        raise RuntimeError(f"Synthea failed: {result.stderr}")
-    
-    print("Synthea extraction completed")
-    print(result.stdout)
+    """Extract step: Check if data exists (generated externally)."""
+    data_dir = Path("/opt/airflow/data")
+    if not data_dir.exists() or not any(data_dir.iterdir()):
+        raise RuntimeError("No data found in /opt/airflow/data. Please generate data externally using 'python run_synthea.py -p 100' on the host.")
+    print("Data found, extraction complete.")

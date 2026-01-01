@@ -4,6 +4,7 @@ import subprocess
 import platform
 import sys
 import argparse
+import urllib.request
 from pathlib import Path
 
 # =========================
@@ -67,17 +68,12 @@ args = parser.parse_args()
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-SYNTHEA_DIR = Path(
-    os.environ.get(
-        "SYNTHEA_DIR",
-        SCRIPT_DIR / "../../../../../synthea"
-    )
-).resolve()
+SYNTHEA_DIR = SCRIPT_DIR
 
 OUTPUT_DIR = Path(
     os.environ.get(
         "OUTPUT_DIR",
-        SCRIPT_DIR / "data"
+        SCRIPT_DIR / "../../../data"
     )
 ).resolve()
 
@@ -94,44 +90,23 @@ def run(cmd, cwd=None, shell=False):
     subprocess.run(cmd, cwd=cwd, check=True, shell=shell)
 
 # =========================
-# CLONE IF MISSING
+# DOWNLOAD JAR IF MISSING
 # =========================
 
-if not SYNTHEA_DIR.exists():
-    log("Cloning Synthea...")
-    run(
-        ["git", "clone", "https://github.com/synthetichealth/synthea.git", str(SYNTHEA_DIR)]
+jar_path = SCRIPT_DIR / "synthea-with-dependencies.jar"
+
+if not jar_path.exists():
+    log("Downloading Synthea jar...")
+    urllib.request.urlretrieve(
+        "https://github.com/synthetichealth/synthea/releases/download/v3.1.0/synthea-with-dependencies.jar",
+        jar_path
     )
-
-# =========================
-# BUILD (ONLY IF NEEDED)
-# =========================
-
-jar_path = SYNTHEA_DIR / "build/libs/synthea-with-dependencies.jar"
-
-if not jar_path.exists() or args.rebuild:
-    log("Building Synthea...")
-
-    if platform.system() == "Windows":
-        gradle_cmd = ["gradlew.bat"]
-        shell = True
-    else:
-        gradle_cmd = ["./gradlew"]
-        shell = False
-
-    run(
-        gradle_cmd + ["build", "-x", "test"],
-        cwd=SYNTHEA_DIR,
-        shell=shell
-    )
-else:
-    log("Synthea jar exists, skipping build.")
 
 # =========================
 # CLEAN OUTPUT
 # =========================
 
-synthea_output = SYNTHEA_DIR / "output"
+synthea_output = SCRIPT_DIR / "output"
 
 if synthea_output.exists():
     log("Removing previous Synthea output...")
@@ -175,7 +150,7 @@ if args.state:
 log("Running Synthea with command:")
 log(" ".join(cmd))
 
-run(cmd, cwd=SYNTHEA_DIR)
+run(cmd, cwd=SCRIPT_DIR)
 
 # =========================
 # COPY OUTPUTS

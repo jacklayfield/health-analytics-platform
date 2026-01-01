@@ -9,10 +9,7 @@ airflow/etl/__pycache__/
 plugins/operators/__pycache__/
 
 # Data folders
-data/raw/
-data/output/
-data/tmp/
-data/processed
+data
 
 # Docker and system files
 *.log
@@ -29,3 +26,5 @@ venv/
 
 # synthea data
 airflow/etl/synthea/data
+airflow/etl/synthea/output
+airflow/etl/synthea/synthea-with-dependencies.jar

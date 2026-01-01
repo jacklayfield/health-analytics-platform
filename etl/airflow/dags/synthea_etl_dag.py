@@ -7,9 +7,9 @@ import sys
 
 sys.path.append('/opt/airflow')
 
-from etl.airflow.etl.synthea.extract.synthea import extract_synthea
-from etl.airflow.etl.synthea.transform.patients import transform_patients
-from etl.airflow.etl.synthea.load.postgres import load_patients
+from etl.synthea.extract.synthea import extract_synthea
+from etl.synthea.transform.patients import transform_patients
+from etl.synthea.load.postgres import load_patients
 
 default_args = {
     'owner': 'airflow',

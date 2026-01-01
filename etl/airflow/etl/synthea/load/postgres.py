@@ -4,7 +4,7 @@ from ...common.postgres_loader import PostgresLoader
 
 def load_patients(**kwargs):
     """Load patients data into PostgreSQL."""
-    processed_path = 'data/processed/patients.json'
+    processed_path = '/opt/airflow/data/processed/patients.json'
     df = pd.read_json(processed_path)
     
     db_uri = os.getenv('POSTGRES_URI', 'postgresql://airflow:airflow@localhost:5432/airflow')

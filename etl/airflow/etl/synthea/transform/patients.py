@@ -6,13 +6,13 @@ from ..utils import csv_to_records
 
 def _convert_fhir_to_csv():
     """Convert FHIR bundles to CSV if CSV doesn't exist."""
-    csv_path = Path('data/csv/patients.csv')
+    csv_path = Path('/opt/airflow/data/csv/patients.csv')
     if csv_path.exists():
         return 
     
     script_dir = Path(__file__).resolve().parent.parent
-    synthea_dir = (script_dir / "../../../../../synthea").resolve()
-    fhir_dir = synthea_dir / "output" / "fhir"
+    synthea_dir = Path("/opt/airflow/data")
+    fhir_dir = synthea_dir / "fhir"
 
     if not fhir_dir.exists():
         raise FileNotFoundError(f"FHIR directory not found: {fhir_dir}")
@@ -52,7 +52,8 @@ def transform_patients(**kwargs):
         if record.get('birthDate'):
             record['birthDate'] = datetime.fromisoformat(record['birthDate'])
     
-    processed_path = 'data/processed/patients.json'
+    processed_path = Path('/opt/airflow/data/processed/patients.json')
+    processed_path.parent.mkdir(parents=True, exist_ok=True)
     with open(processed_path, 'w') as f:
         json.dump(records, f, default=str)
     

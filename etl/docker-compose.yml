@@ -12,6 +12,7 @@ x-airflow-common:
     AIRFLOW__CORE__LOGGING_LEVEL: ${AIRFLOW__CORE__LOGGING_LEVEL:-INFO}
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: ${AIRFLOW__WEBSERVER__EXPOSE_CONFIG:-'True'}
     AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_WEBSERVER_SECRET_KEY}
+    POSTGRES_URI: postgresql://airflow:airflow@postgres:5432/airflow
   volumes:
     # Mount ETL project
     - ./airflow/dags:/opt/airflow/dags/etl
@@ -24,7 +25,6 @@ x-airflow-common:
 
     # requirements (optional)
     - ./requirements.txt:/requirements-etl.txt
-  user: "${AIRFLOW_UID:-50000}:0"
 
 services:
   airflow-init:
