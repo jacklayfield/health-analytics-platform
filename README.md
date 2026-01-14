@@ -18,90 +18,84 @@ This monorepo unifies all major components:
 ## Repository Structure
 
 ```
-health-analytics-platform
-├───health-etl-pipeline
-│   ├───airflow
-│   │   ├───dags
-│   │   └───etl
-│   │       ├───common
-│   │       ├───openfda
-│   │       └───synthea
-│   ├───data
-│   ├───include
-│   ├───pgadmin-config
-│   ├───plugins
-│   │   └───operators
-│   ├───scripts
-│   ├───sql
-│   ├───test
-│   ├───visualization
-│   │   └───utils
-│   └───warehouse
-└───health-ml-pipelines
-    ├───archive
-    └───pipelines
-        ├───common
-        ├───reaction_prediction
-        └───serious_prediction
+health-analytics-platform/
+├── etl/                    # ETL pipelines using Apache Airflow for healthcare data ingestion
+├── ml/                     # Machine learning pipelines with MLflow integration for health predictions
+├── dashboard/              # Web dashboard with React frontend and Python backend
+├── infra/                  # Infrastructure setup with Docker, Helm, and Terraform
+├── data/                   # Data storage and processing artifacts
+├── include/                # Shared configurations and utilities
+├── plugins/                # Custom Airflow plugins and operators
+└── requirements.txt/       # Python dependencies
 ```
 ---
 
 ## Components
 
 ### 1. ETL Pipelines (etl/)
-- Uses **Apache Airflow** to orchestrate ingestion from OpenFDA, Synthea, and other sources.
-- Loads structured data into a **PostgreSQL** warehouse (with optional Snowflake integration).
-- Handles data cleaning, normalization, and schema management.
+- Robust ETL system built on **Apache Airflow** for orchestrating healthcare data ingestion from sources like OpenFDA and Synthea.
+- Features modular pipeline design, data transformation, validation, and PostgreSQL warehouse integration.
+- Includes Docker containerization, custom operators, SQL analytics queries, and a Plotly/Dash visualization dashboard.
 
 ### 2. Machine Learning Pipelines (ml/)
-- Includes modular ML pipelines built in scikit-learn and pandas.
-- Currently supports:
-  - **Serious Adverse Event Prediction** using OpenFDA data.
-  - (Planned) **Reaction Prediction** models.
-- Exports models as `.joblib` artifacts for downstream applications.
+- Production-ready ML pipeline with comprehensive experiment tracking using **MLflow**.
+- Supports multiple algorithms (Logistic Regression, Random Forest, etc.), hyperparameter optimization with Optuna, and model serving via FastAPI.
+- Includes data validation, feature engineering, model evaluation, and CLI tools for all operations.
 
-### 3. Infrastructure (Coming Soon)
-- Provides a **Docker Compose** setup for local development, running:
-  - Postgres
-  - Airflow
-  - pgAdmin
-- Contains optional Terraform/Helm scaffolding for cloud deployment.
+### 3. Infrastructure (infra/)
+- Complete infrastructure setup with **Docker Compose** for local development, including Postgres, Airflow, and pgAdmin.
+- Includes **Helm charts** for Kubernetes deployment and **Terraform** configurations for cloud infrastructure.
+- Provides scripts and configurations for reproducible deployments.
 
-### 4. Dashboard (Coming Soon)
-- A Flask + Plotly.js web dashboard for visualizing trends and model results.
+### 4. Dashboard (dashboard/)
+- Modern web dashboard with **React + TypeScript + Vite** frontend for data visualization and analytics.
+- **Python backend** (Flask/FastAPI) for API endpoints, integrating with ML models and data warehouse.
+- Features interactive charts and real-time insights into health data trends and model results.
 
 ---
 
 ## Getting Started
 
 ### 1. Clone the Repository
+```bash
 git clone https://github.com/jacklayfield/health-analytics-platform.git
 cd health-analytics-platform
+```
 
-### 2. Start the Infrastructure (Coming soon)
+### 2. Start the Infrastructure
+```bash
 cd infra
 docker compose up -d
+```
 
 This will launch:
 - Postgres (data warehouse)
 - Airflow (ETL orchestrator)
 - pgAdmin (database management UI)
 
-NOTE: IF needed to reset pgadmin account:
+**NOTE:** If needed to reset pgadmin account:
+```bash
 docker compose down
 docker volume rm health-analytics-platform_pgadmin-data
 docker compose up -d
+```
 
 ### 3. Run the ETL Pipeline
 Once Airflow is up, open the UI at http://localhost:8080 and trigger the DAG:
-openfda_etl_dag
+- `openfda_etl_dag`
 
 ### 4. Train the ML Model
-cd ml/pipelines/serious_prediction
-python train_logreg.py
+```bash
+cd ml
+# Follow the ML pipeline README for training commands
+```
 
-This will train the logistic regression model on OpenFDA data and save it to:
-ml/models/openfda_serious_predictor.joblib
+### 5. Launch the Dashboard
+```bash
+cd dashboard
+docker compose up -d
+```
+Open the dashboard at http://localhost:3000 (frontend) and API at http://localhost:5000 (backend).
 
 ---
 
@@ -125,16 +119,27 @@ ml/models/openfda_serious_predictor.joblib
 |-------|-------------|
 | **Orchestration** | Apache Airflow |
 | **Database** | PostgreSQL (Snowflake planned) |
-| **ML/Analytics** | Python, scikit-learn, pandas |
-| **Infrastructure** | Docker, Terraform (optional), Helm (optional) |
-| **Visualization** | Plotly.js / Flask (future) |
+| **ML/Analytics** | Python, scikit-learn, pandas, MLflow, Optuna |
+| **Infrastructure** | Docker, Docker Compose, Terraform, Helm, Kubernetes |
+| **Visualization** | Plotly.js, Dash, React, TypeScript, Vite |
+| **Backend** | Flask, FastAPI |
 
 ---
 
 ## Development Notes
-- Ensure Python 3.10+ and Docker are installed.
+- Ensure Python 3.10+, Node.js, and Docker are installed.
 - Environment variables are stored in `.env` files inside each module (e.g. `etl/.env`, `ml/.env`).
-- Common utilities are located in `ml/pipelines/common/`.
+- Common utilities are located in `etl/etl/common/` and `ml/src/utils/`.
+
+**Environment Files (per-component `.env`)**:
+
+- **Pattern**: each subproject has a component-local `.env` file (`ml/.env`, `etl/.env`, `infra/.env`, `dashboard/.env`) that contains the environment variables used by that component's `docker-compose`. This keeps components self-contained and makes it easy to run a single component in isolation.
+- **Do not commit real secrets**: all `.env` files should contain non-sensitive defaults or placeholders. Add any real, sensitive secrets to your team's secrets manager or use Docker secrets for production. The repository's top-level `.gitignore` already excludes `.env` files.
+
+- `ml/.env`: `WAREHOUSE_DB_URI`, `MLFLOW_TRACKING_URI`
+- `etl/.env`: `AIRFLOW__*` settings (e.g., `AIRFLOW__CORE__FERNET_KEY`), `AIRFLOW_UID`, `AIRFLOW_ADMIN_USER`, `AIRFLOW_ADMIN_PASSWORD`
+- `infra/.env`: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `PGADMIN_DEFAULT_SERVER_PASSWORD`
+- `dashboard/.env`: `MLFLOW_TRACKING_URI`, `POSTGRES_URI`, `AIRFLOW_BASE`, `AIRFLOW_USERNAME`, `AIRFLOW_PASSWORD`
 
 **Environment Files (per-component `.env`)**:
 
@@ -191,12 +196,16 @@ docker compose \
 ---
 
 ## Future Roadmap
-- [ ] Add reaction severity prediction pipeline.
-- [ ] Integrate Synthea patient simulation data.
-- [ ] Deploy ML models with FastAPI endpoints.
-- [ ] Add health analytics dashboard.
-- [ ] Move warehouse to Snowflake.
-- [ ] Automate cloud infra with Terraform + Helm.
+- [x] Implement ETL pipelines with Apache Airflow
+- [x] Build ML pipelines with MLflow integration
+- [ ] Set up infrastructure with Docker, Helm, Terraform
+- [x] Create web dashboard with React frontend
+- [ ] Add reaction severity prediction pipeline
+- [ ] Integrate Synthea patient simulation data
+- [ ] Deploy ML models with FastAPI endpoints
+- [ ] Enhance dashboard with advanced analytics
+- [ ] Move warehouse to Snowflake
+- [ ] Automate cloud infra with Terraform + Helm
 
 ---
 
