@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from services.postgres_client import query_df, trends_by_date
+from services.synthea_client import get_patients_df, get_conditions_df, get_medications_df
 import json
 
 data_bp = Blueprint("data", __name__)
@@ -24,4 +25,19 @@ def table_view():
         sql += f" WHERE {q}"
     sql += f" LIMIT {size}"
     df = query_df(sql)
+    return df.to_dict(orient="records")
+
+@data_bp.route("/synthea/patients", methods=["GET"])
+def synthea_patients():
+    df = get_patients_df()
+    return df.to_dict(orient="records")
+
+@data_bp.route("/synthea/conditions", methods=["GET"])
+def synthea_conditions():
+    df = get_conditions_df()
+    return df.to_dict(orient="records")
+
+@data_bp.route("/synthea/medications", methods=["GET"])
+def synthea_medications():
+    df = get_medications_df()
     return df.to_dict(orient="records")

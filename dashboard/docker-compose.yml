@@ -9,6 +9,7 @@ services:
     volumes:
       - ./backend:/app
       - ${PWD}/../ml/config:/app/ml/config
+      - ${PWD}/../../synthea/output:/app/synthea_data
     environment:
       - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
       - POSTGRES_URI=${POSTGRES_URI}
