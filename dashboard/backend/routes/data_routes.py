@@ -8,7 +8,7 @@ data_bp = Blueprint("data", __name__)
 @data_bp.route("/trends", methods=["GET"])
 def trends():
     table = request.args.get("table", "openfda_events")
-    metric_col = request.args.get("metric_col", "seriousness")
+    metric_col = request.args.get("metric_col", "serious")
     group_by = request.args.get("group_by", "patientsex")
     date_col = request.args.get("date_col", "receivedate")
     limit = int(request.args.get("limit", 500))
