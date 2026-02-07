@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import DataDashboard from './components/DataDashboard';
-import ETLDashboard from './components/ETLDashboard';
-import MLDashboard from './components/MLDashboard';
 import './App.css';
 
 type Tab = 'data' | 'etl' | 'ml';
@@ -9,65 +7,45 @@ type Tab = 'data' | 'etl' | 'ml';
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('data');
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'data':
-        return <DataDashboard />;
-      case 'etl':
-        return <ETLDashboard />;
-      case 'ml':
-        return <MLDashboard />;
-      default:
-        return <DataDashboard />;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Health Analytics Dashboard</h1>
-          </div>
+    <div className="min-h-screen bg-slate-950">
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl font-bold text-cyan-400">Health Analytics Dashboard</h1>
+          <p className="text-sm text-slate-300 mt-2">Real-time healthcare data platform</p>
         </div>
       </header>
 
-      <nav className="bg-white shadow-sm">
+      {/* Navigation */}
+      <nav className="border-b border-slate-800 bg-slate-900/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+          <div className="flex gap-2 py-3">
             <button
               onClick={() => setActiveTab('data')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'data'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+              className="px-4 py-2 font-medium text-sm transition-all border-b-2 text-cyan-400 border-b-cyan-400 hover:text-cyan-300"
             >
-              Data
+              DATA
             </button>
             <button
-              onClick={() => setActiveTab('etl')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'etl'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+              disabled
+              className="px-4 py-2 font-medium text-sm transition-all border-b-2 text-slate-500 border-b-transparent opacity-50 cursor-not-allowed"
             >
-              ETL
+              ETL <span className="text-xs ml-2">(coming soon)</span>
             </button>
             <button
-              onClick={() => setActiveTab('ml')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'ml'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+              disabled
+              className="px-4 py-2 font-medium text-sm transition-all border-b-2 text-slate-500 border-b-transparent opacity-50 cursor-not-allowed"
             >
-              ML
+              ML <span className="text-xs ml-2">(coming soon)</span>
             </button>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {renderTabContent()}
+      {/* Main Content */}
+      <main>
+        {activeTab === 'data' && <DataDashboard />}
       </main>
     </div>
   );
