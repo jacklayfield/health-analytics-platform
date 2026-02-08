@@ -25,11 +25,16 @@ def get_patient_data() -> List[Dict[str, Any]]:
         for entry in bundle.get("entry", []):
             resource = entry.get("resource", {})
             if resource.get("resourceType") == "Patient":
+                name_data = resource.get("name", [{}])[0]
+                given_names = name_data.get("given", [])
+                family_name = name_data.get("family", "")
+                
                 patient = {
                     "id": resource.get("id"),
-                    "name": " ".join(resource.get("name", [{}])[0].get("given", []) + [resource.get("name", [{}])[0].get("family", "")]),
+                    "first": " ".join(given_names) if given_names else "",
+                    "last": family_name,
                     "gender": resource.get("gender"),
-                    "birthDate": resource.get("birthDate"),
+                    "birthdate": resource.get("birthDate"),
                     "address": resource.get("address", [{}])[0].get("city", "") + ", " + resource.get("address", [{}])[0].get("state", ""),
                 }
                 patients.append(patient)
