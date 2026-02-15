@@ -1,0 +1,33 @@
+# =============================================================================
+# Terraform Variables Example
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in your values
+# IMPORTANT: Never commit terraform.tfvars to version control!
+# =============================================================================
+
+# AWS Configuration
+aws_region     = "us-east-1"
+environment    = "dev"
+project_name   = "health-analytics"
+
+# Networking
+vpc_cidr            = "10.0.0.0/16"
+availability_zones  = ["us-east-1a", "us-east-1b", "us-east-1c"]
+
+# Database Configuration
+db_instance_class    = "db.t3.medium"
+db_allocated_storage = 20
+db_name             = "healthanalytics"
+db_username         = "dbadmin"
+# db_password         = "your-secure-password-here" 
+
+# S3 Configuration
+s3_bucket_prefix  = "health-analytics"
+enable_versioning = true
+
+# Tags
+tags = {
+  Project     = "health-analytics-platform"
+  ManagedBy   = "Terraform"
+  Environment = "dev"
+}
