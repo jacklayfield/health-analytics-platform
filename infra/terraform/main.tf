@@ -57,3 +57,21 @@ module "storage" {
   
   tags               = var.tags
 }
+
+# -----------------------------------------------------------------------------
+# pgAdmin Module (ECS + ALB)
+# -----------------------------------------------------------------------------
+module "pgadmin" {
+  source = "./modules/pgadmin"
+
+  project_name      = var.project_name
+  environment       = var.environment
+  vpc_id            = module.networking.vpc_id
+  subnet_ids        = module.networking.public_subnet_ids
+  security_group_id = module.networking.application_security_group_id
+
+  admin_email       = var.pgadmin_admin_email
+  admin_password    = var.pgadmin_admin_password
+
+  tags              = var.tags
+}

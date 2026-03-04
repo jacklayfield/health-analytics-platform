@@ -89,3 +89,17 @@ output "s3_bucket_arns" {
     analytics    = module.storage.analytics_bucket_arn
   }
 }
+
+# -----------------------------------------------------------------------------
+# pgAdmin outputs
+# -----------------------------------------------------------------------------
+
+output "pgadmin_lb_dns" {
+  description = "DNS name for pgAdmin load balancer"
+  value       = module.pgadmin.lb_dns_name
+}
+
+output "pgadmin_service_arn" {
+  description = "ARN of the pgAdmin ECS service"
+  value       = module.pgadmin.service_arn
+}

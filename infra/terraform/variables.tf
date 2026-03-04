@@ -96,3 +96,20 @@ variable "enable_versioning" {
   type        = bool
   default     = true
 }
+
+# -----------------------------------------------------------------------------
+# pgAdmin variables
+# -----------------------------------------------------------------------------
+
+variable "pgadmin_admin_email" {
+  description = "Default admin email for pgAdmin"
+  type        = string
+  default     = "admin@example.com"
+}
+
+variable "pgadmin_admin_password" {
+  description = "Default admin password for pgAdmin"
+  type        = string
+  sensitive   = true
+  default     = "password"
+}

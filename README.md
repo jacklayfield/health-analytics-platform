@@ -158,6 +158,19 @@ Open the dashboard at http://localhost:3000 (frontend) and API at http://localho
 cp ml/.env.example ml/.env
 ```
 
+
+### Infrastructure as Code 📦
+The `infra` directory now contains Terraform modules for critical services (Postgres/RDS,
+pgAdmin/ECS, networking, storage) and a Terragrunt `live/` layout for per‑environment stacks.
+
+* run `terraform` directly from `infra/terraform` or use `terragrunt apply-all` from
+  `infra/live/{dev,prod}` to provision resources in AWS.
+* Modules: `networking`, `database` (Postgres), `pgadmin` (ECS-based), `storage` (S3).
+* Example dev configuration lives under `infra/live/dev/` and demonstrates
+  dependencies between networking, database, and pgadmin.
+
+Refer to the module README files for details (new `infra/terraform/modules/pgadmin`).
+
        - Start a single component from its directory:
 
 ```bash
