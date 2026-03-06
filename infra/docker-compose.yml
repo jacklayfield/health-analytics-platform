@@ -1,7 +1,12 @@
+## ---------------------------------------------------------------------------
+## Local development Docker Compose for infra services
+## ---------------------------------------------------------------------------
+
 services:
   postgres:
-    env_file: .env
     image: postgres:13
+    env_file: .env
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-airflow}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airflow}
@@ -14,11 +19,11 @@ services:
       - health-net
 
   pgadmin:
-    env_file: .env
     image: dpage/pgadmin4:latest
     container_name: pgadmin
+    env_file: .env
     restart: unless-stopped
-    environment:
+    environment: &pgadmin-env
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-password}
       PGADMIN_CONFIG_SERVER_MODE: "True"
@@ -36,6 +41,7 @@ services:
 volumes:
   postgres-db-volume:
   pgadmin-data:
+
 
 networks:
   health-net:
