@@ -1,0 +1,43 @@
+# Global values for umbrella chart
+global:
+  imagePullSecrets: []
+
+backend:
+  enabled: true
+  image:
+    repository: tbd-registry/health-analytics-backend
+    tag: latest
+  replicaCount: 1
+  service:
+    port: 8080
+  resources: {}
+
+frontend:
+  enabled: true
+  image:
+    repository: tbd-registry/health-analytics-frontend
+    tag: latest
+  replicaCount: 1
+  service:
+    port: 3000
+  resources: {}
+
+etl:
+  enabled: true
+  image:
+    repository: tbd-registry/health-analytics-etl
+    tag: latest
+  replicaCount: 1
+  service:
+    port: 8080
+  resources: {}
+
+ml:
+  enabled: true
+  image:
+    repository: tbd-registry/health-analytics-ml
+    tag: latest
+  replicaCount: 1
+  service:
+    port: 5000
+  resources: {}

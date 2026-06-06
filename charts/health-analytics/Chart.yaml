@@ -1,0 +1,6 @@
+apiVersion: v2
+name: health-analytics
+description: Umbrella chart for the Health Analytics Platform (per-service subcharts)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

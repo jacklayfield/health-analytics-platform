@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-ml" .Release.Name }}
+  labels:
+    app: {{ printf "%s-ml" .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ printf "%s-ml" .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ printf "%s-ml" .Release.Name }}
+    spec:
+      containers:
+        - name: ml
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          resources: {{ toYaml .Values.resources | nindent 10 }}

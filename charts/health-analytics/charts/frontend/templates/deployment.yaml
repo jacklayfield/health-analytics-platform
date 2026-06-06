@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-frontend" .Release.Name }}
+  labels:
+    app: {{ printf "%s-frontend" .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ printf "%s-frontend" .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ printf "%s-frontend" .Release.Name }}
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          resources: {{ toYaml .Values.resources | nindent 10 }}

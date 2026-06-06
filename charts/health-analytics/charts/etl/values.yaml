@@ -1,0 +1,10 @@
+replicaCount: 1
+image:
+  repository: tbd-registry/health-analytics-etl
+  tag: latest
+service:
+  port: 8080
+resources: {}
+ingress:
+  enabled: false
+  hosts: []

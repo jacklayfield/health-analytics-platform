@@ -1,0 +1,10 @@
+replicaCount: 1
+image:
+  repository: tbd-registry/health-analytics-ml
+  tag: latest
+service:
+  port: 5000
+resources: {}
+ingress:
+  enabled: false
+  hosts: []

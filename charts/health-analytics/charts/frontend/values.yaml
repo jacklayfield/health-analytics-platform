@@ -1,0 +1,10 @@
+replicaCount: 1
+image:
+  repository: tbd-registry/health-analytics-frontend
+  tag: latest
+service:
+  port: 3000
+resources: {}
+ingress:
+  enabled: false
+  hosts: []
