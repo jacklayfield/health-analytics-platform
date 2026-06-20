@@ -17,6 +17,14 @@ spec:
       containers:
         - name: backend
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: {{ .Values.service.port }}
+          env: {{ toYaml .Values.env | nindent 10 }}
+{{- if .Values.livenessProbe }}
+          livenessProbe: {{ toYaml .Values.livenessProbe | nindent 10 }}
+{{- end }}
+{{- if .Values.readinessProbe }}
+          readinessProbe: {{ toYaml .Values.readinessProbe | nindent 10 }}
+{{- end }}
           resources: {{ toYaml .Values.resources | nindent 10 }}

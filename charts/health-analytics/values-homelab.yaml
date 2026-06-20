@@ -1,0 +1,41 @@
+# Homelab override values for Docker Desktop Kubernetes
+backend:
+  image:
+    repository: health-analytics-backend
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 8080
+  ingress:
+    enabled: false
+
+frontend:
+  image:
+    repository: health-analytics-frontend
+    tag: latest
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30080
+  ingress:
+    enabled: false
+
+etl:
+  image:
+    repository: health-analytics-etl
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 8080
+  ingress:
+    enabled: false
+
+ml:
+  image:
+    repository: health-analytics-ml
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 5000
+  ingress:
+    enabled: false

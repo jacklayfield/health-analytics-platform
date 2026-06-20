@@ -7,37 +7,105 @@ backend:
   image:
     repository: tbd-registry/health-analytics-backend
     tag: latest
+    pullPolicy: IfNotPresent
   replicaCount: 1
   service:
+    type: ClusterIP
     port: 8080
+    nodePort: null
+  env: []
+  livenessProbe:
+    tcpSocket:
+      port: 8080
+    initialDelaySeconds: 20
+    periodSeconds: 10
+  readinessProbe:
+    tcpSocket:
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
   resources: {}
+  ingress:
+    enabled: false
+    hosts: []
 
 frontend:
   enabled: true
   image:
     repository: tbd-registry/health-analytics-frontend
     tag: latest
+    pullPolicy: IfNotPresent
   replicaCount: 1
   service:
+    type: NodePort
     port: 3000
+    nodePort: 30080
+  env: []
+  livenessProbe:
+    tcpSocket:
+      port: 3000
+    initialDelaySeconds: 20
+    periodSeconds: 10
+  readinessProbe:
+    tcpSocket:
+      port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 10
   resources: {}
+  ingress:
+    enabled: false
+    hosts: []
 
 etl:
   enabled: true
   image:
     repository: tbd-registry/health-analytics-etl
     tag: latest
+    pullPolicy: IfNotPresent
   replicaCount: 1
   service:
+    type: ClusterIP
     port: 8080
+    nodePort: null
+  env: []
+  livenessProbe:
+    tcpSocket:
+      port: 8080
+    initialDelaySeconds: 20
+    periodSeconds: 10
+  readinessProbe:
+    tcpSocket:
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
   resources: {}
+  ingress:
+    enabled: false
+    hosts: []
 
 ml:
   enabled: true
   image:
     repository: tbd-registry/health-analytics-ml
     tag: latest
+    pullPolicy: IfNotPresent
   replicaCount: 1
   service:
+    type: ClusterIP
     port: 5000
+    nodePort: null
+  env: []
+  livenessProbe:
+    tcpSocket:
+      port: 5000
+    initialDelaySeconds: 20
+    periodSeconds: 10
+  readinessProbe:
+    tcpSocket:
+      port: 5000
+    initialDelaySeconds: 10
+    periodSeconds: 10
   resources: {}
+  ingress:
+    enabled: false
+    hosts: []

@@ -2,8 +2,12 @@ replicaCount: 1
 image:
   repository: tbd-registry/health-analytics-etl
   tag: latest
+  pullPolicy: IfNotPresent
 service:
+  type: ClusterIP
   port: 8080
+  nodePort: null
+env: []
 resources: {}
 ingress:
   enabled: false

@@ -4,3 +4,16 @@ description: Umbrella chart for the Health Analytics Platform (per-service subch
 type: application
 version: 0.1.0
 appVersion: "0.1.0"
+dependencies:
+  - name: backend
+    version: 0.1.0
+    repository: "file://charts/backend"
+  - name: frontend
+    version: 0.1.0
+    repository: "file://charts/frontend"
+  - name: etl
+    version: 0.1.0
+    repository: "file://charts/etl"
+  - name: ml
+    version: 0.1.0
+    repository: "file://charts/ml"
