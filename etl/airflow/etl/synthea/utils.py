@@ -18,17 +18,19 @@ def csv_to_records(path: str) -> List[dict]:
         df = pd.read_csv(path)
         return df.to_dict(orient="records")
     except Exception:
-        logger.debug("pandas not available or failed; falling back to csv module for %s", path)
+        logger.debug(
+            "pandas not available or failed; falling back to csv module for %s", path
+        )
 
     records = []
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             # convert empty strings to None? keep as-is for now
-            records.append({k: (v if v != '' else None) for k, v in row.items()})
+            records.append({k: (v if v != "" else None) for k, v in row.items()})
     return records
 
 
 def write_json(path: str, records: List[dict]):
-    with open(path, 'w', encoding='utf-8') as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(records, f, indent=2)

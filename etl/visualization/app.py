@@ -1,7 +1,6 @@
 import dash
 import dash_bootstrap_components as dbc
 from visualization.layout import create_layout
-from visualization import callbacks
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.title = "Health Data Explorer"

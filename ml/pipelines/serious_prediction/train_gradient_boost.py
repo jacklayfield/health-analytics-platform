@@ -1,4 +1,5 @@
-# Train a Gradient Booster classifier to predict whether an adverse event is serious (2) or not (1)
+# Train a Gradient Booster classifier to predict whether an adverse event is
+# serious (2) or not (1).
 
 from pathlib import Path
 from sklearn.pipeline import Pipeline
@@ -9,6 +10,7 @@ import joblib
 
 from pipelines.common.data_utils import load_openfda_events
 from pipelines.common.preprocessing import make_preprocessor
+
 
 def main():
     df = load_openfda_events()
@@ -25,15 +27,17 @@ def main():
     categorical = ["patientsex", "reaction", "brand_name"]
     preprocessor = make_preprocessor(numeric, categorical)
 
-    model = Pipeline([
-        ("preprocessor", preprocessor),
-        ("classifier", GradientBoostingClassifier(
-            n_estimators=300,
-            learning_rate=0.1,
-            max_depth=3,
-            random_state=42
-        ))
-    ])
+    model = Pipeline(
+        [
+            ("preprocessor", preprocessor),
+            (
+                "classifier",
+                GradientBoostingClassifier(
+                    n_estimators=300, learning_rate=0.1, max_depth=3, random_state=42
+                ),
+            ),
+        ]
+    )
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y

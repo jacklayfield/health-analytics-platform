@@ -1,10 +1,14 @@
 from flask import Blueprint, jsonify, request
 from services.postgres_client import query_df, trends_by_date
-from services.synthea_client import get_patients_df, get_conditions_df, get_medications_df
-import json
+from services.synthea_client import (
+    get_patients_df,
+    get_conditions_df,
+    get_medications_df,
+)
 import pandas as pd
 
 data_bp = Blueprint("data", __name__)
+
 
 def convert_response(df):
     """Convert DataFrame to list of dicts with NaN values replaced by None."""
@@ -16,6 +20,7 @@ def convert_response(df):
                 record[key] = None
     return data
 
+
 @data_bp.route("/trends", methods=["GET"])
 def trends():
     table = request.args.get("table", "openfda_events")
@@ -23,8 +28,11 @@ def trends():
     group_by = request.args.get("group_by", "patientsex")
     date_col = request.args.get("date_col", "receivedate")
     limit = int(request.args.get("limit", 500))
-    df = trends_by_date(table, date_col=date_col, metric_col=metric_col, group_by=group_by, limit=limit)
+    df = trends_by_date(
+        table, date_col=date_col, metric_col=metric_col, group_by=group_by, limit=limit
+    )
     return jsonify(convert_response(df))
+
 
 @data_bp.route("/table", methods=["GET"])
 def table_view():
@@ -38,20 +46,24 @@ def table_view():
     df = query_df(sql)
     return jsonify(convert_response(df))
 
+
 @data_bp.route("/synthea/patients", methods=["GET"])
 def synthea_patients():
     df = get_patients_df()
     return jsonify(convert_response(df))
+
 
 @data_bp.route("/synthea/conditions", methods=["GET"])
 def synthea_conditions():
     df = get_conditions_df()
     return jsonify(convert_response(df))
 
+
 @data_bp.route("/synthea/medications", methods=["GET"])
 def synthea_medications():
     df = get_medications_df()
     return jsonify(convert_response(df))
+
 
 @data_bp.route("/openfda/events", methods=["GET"])
 def openfda_events():
@@ -60,11 +72,12 @@ def openfda_events():
     try:
         df = query_df(f"SELECT * FROM public.openfda_events LIMIT {size}")
         if df.empty:
-            print(f"Warning: openfda_events query returned empty result")
+            print("Warning: openfda_events query returned empty result")
         return jsonify(convert_response(df))
     except Exception as e:
         print(f"Error fetching openfda_events: {e}")
         return jsonify({"error": str(e)})
+
 
 @data_bp.route("/openfda/patients", methods=["GET"])
 def openfda_patients():
@@ -72,7 +85,7 @@ def openfda_patients():
     limit = int(request.args.get("limit", 50))
     try:
         sql = f"""
-            SELECT 
+            SELECT
                 patientonsetage,
                 patientsex,
                 COUNT(*) as event_count,
@@ -86,9 +99,8 @@ def openfda_patients():
         """
         df = query_df(sql)
         if df.empty:
-            print(f"Warning: openfda_patients query returned empty result")
+            print("Warning: openfda_patients query returned empty result")
         return jsonify(convert_response(df))
     except Exception as e:
         print(f"Error fetching openfda_patients: {e}")
         return jsonify({"error": str(e)})
-  

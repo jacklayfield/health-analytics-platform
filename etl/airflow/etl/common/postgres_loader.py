@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 import pandas as pd
 from etl.common.base_loader import DataLoader
 
+
 class PostgresLoader(DataLoader):
     def __init__(self, db_uri, table_name):
         self.db_uri = db_uri

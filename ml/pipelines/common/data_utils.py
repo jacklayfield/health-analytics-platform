@@ -3,12 +3,13 @@
 import os
 import pandas as pd
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 
 
-def get_engine() -> 'sqlalchemy.Engine':
+def get_engine() -> Engine:
     db_uri = os.getenv(
         "WAREHOUSE_DB_URI",
-        "postgresql+psycopg2://airflow:airflow@localhost:5432/airflow"
+        "postgresql+psycopg2://airflow:airflow@localhost:5432/airflow",
     )
     return create_engine(db_uri)
 

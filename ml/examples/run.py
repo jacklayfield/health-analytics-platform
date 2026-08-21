@@ -1,4 +1,5 @@
-# Example script to demonstrate MLflow autologging with a RandomForestRegressor on the diabetes dataset.
+# Example script to demonstrate MLflow autologging with a
+# RandomForestRegressor on the diabetes dataset.
 import mlflow
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_diabetes

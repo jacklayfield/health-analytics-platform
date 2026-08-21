@@ -233,8 +233,6 @@ def extract_cms_desynpuf(
         encoding="utf-8",
     )
 
-    print(
-        f"CMS DE-SynPUF Sample {sample} extraction complete."
-    )
+    print(f"CMS DE-SynPUF Sample {sample} extraction complete.")
 
     return manifest

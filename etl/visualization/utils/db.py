@@ -1,14 +1,13 @@
 import psycopg2
 import pandas as pd
 
+
 # Note: need to rework when using Snowflake
 def get_connection():
     return psycopg2.connect(
-        host="localhost",
-        database="your_db",
-        user="your_user",
-        password="your_password"
+        host="localhost", database="your_db", user="your_user", password="your_password"
     )
+
 
 def query_data(dataset, start_date, end_date):
     conn = get_connection()

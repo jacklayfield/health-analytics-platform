@@ -3,11 +3,12 @@ import requests
 import json
 import time
 
+
 def download_openfda_data(
     api_url="https://api.fda.gov/drug/event.json",
     output_path="/opt/airflow/data/raw/events.json",
     limit=100,
-    max_records=1000
+    max_records=1000,
 ):
     print(f"Fetching openFDA data from {api_url}...")
 

@@ -1,6 +1,6 @@
-# Train a Logistic Regression classifier to predict whether an adverse event is serious (1) or not (0/2).
+# Train a Logistic Regression classifier to predict whether an adverse event is
+# serious (1) or not (0/2).
 
-import os
 from pathlib import Path
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
@@ -31,10 +31,12 @@ def main():
     # Build pipeline
     preprocessor = make_preprocessor(numeric, categorical)
 
-    model = Pipeline([
-        ("preprocessor", preprocessor),
-        ("classifier", LogisticRegression(max_iter=1000))
-    ])
+    model = Pipeline(
+        [
+            ("preprocessor", preprocessor),
+            ("classifier", LogisticRegression(max_iter=1000)),
+        ]
+    )
 
     # Train / evaluate
     X_train, X_test, y_train, y_test = train_test_split(
@@ -53,6 +55,7 @@ def main():
     out_path = Path("models/openfda_serious_logreg.joblib")
     joblib.dump(model, out_path)
     print(f"Model saved to {out_path.resolve()}")
+
 
 if __name__ == "__main__":
     main()

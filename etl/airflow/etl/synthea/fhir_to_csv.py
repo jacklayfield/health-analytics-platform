@@ -41,8 +41,10 @@ conditions = []
 observations = []
 medications = []
 
+
 def ref(r):
     return r.get("reference") if isinstance(r, dict) else None
+
 
 # -------------------------
 # Parse FHIR bundles
@@ -57,45 +59,56 @@ for f in fhir_files:
         rt = r.get("resourceType")
 
         if rt == "Patient":
-            patients.append({
-                "id": r.get("id"),
-                "gender": r.get("gender"),
-                "birthDate": r.get("birthDate")
-            })
+            patients.append(
+                {
+                    "id": r.get("id"),
+                    "gender": r.get("gender"),
+                    "birthDate": r.get("birthDate"),
+                }
+            )
 
         elif rt == "Encounter":
-            encounters.append({
-                "id": r.get("id"),
-                "patient": ref(r.get("subject")),
-                "start": r.get("period", {}).get("start"),
-                "end": r.get("period", {}).get("end")
-            })
+            encounters.append(
+                {
+                    "id": r.get("id"),
+                    "patient": ref(r.get("subject")),
+                    "start": r.get("period", {}).get("start"),
+                    "end": r.get("period", {}).get("end"),
+                }
+            )
 
         elif rt == "Condition":
-            conditions.append({
-                "id": r.get("id"),
-                "patient": ref(r.get("subject")),
-                "code": r.get("code", {}).get("text")
-            })
+            conditions.append(
+                {
+                    "id": r.get("id"),
+                    "patient": ref(r.get("subject")),
+                    "code": r.get("code", {}).get("text"),
+                }
+            )
 
         elif rt == "Observation":
-            observations.append({
-                "id": r.get("id"),
-                "patient": ref(r.get("subject")),
-                "code": r.get("code", {}).get("text"),
-                "value": r.get("valueQuantity", {}).get("value")
-            })
+            observations.append(
+                {
+                    "id": r.get("id"),
+                    "patient": ref(r.get("subject")),
+                    "code": r.get("code", {}).get("text"),
+                    "value": r.get("valueQuantity", {}).get("value"),
+                }
+            )
 
         elif rt == "MedicationRequest":
-            medications.append({
-                "id": r.get("id"),
-                "patient": ref(r.get("subject")),
-                "medication": r.get("medicationCodeableConcept", {}).get("text")
-            })
+            medications.append(
+                {
+                    "id": r.get("id"),
+                    "patient": ref(r.get("subject")),
+                    "medication": r.get("medicationCodeableConcept", {}).get("text"),
+                }
+            )
 
 # -------------------------
 # Write CSVs
 # -------------------------
+
 
 def write(name, rows):
     if not rows:
@@ -109,6 +122,7 @@ def write(name, rows):
         w.writerows(rows)
 
     print(f"[fhir_to_csv] Wrote {out} ({len(rows)} rows)")
+
 
 write("patients", patients)
 write("encounters", encounters)

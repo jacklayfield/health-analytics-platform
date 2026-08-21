@@ -3,6 +3,7 @@ from etl.common.postgres_loader import PostgresLoader
 from etl.common.snowflake_loader import SnowflakeLoader
 import os
 
+
 def load_openfda_data(
     input_path: str = "/opt/airflow/data/processed/events.csv",
     warehouse: str = "postgres",

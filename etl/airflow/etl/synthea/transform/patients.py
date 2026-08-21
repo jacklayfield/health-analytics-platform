@@ -4,13 +4,14 @@ from datetime import datetime
 from pathlib import Path
 from ..utils import csv_to_records
 
+
 def _convert_fhir_to_csv():
     """Convert FHIR bundles to CSV if CSV doesn't exist."""
-    csv_path = Path('/opt/airflow/data/csv/patients.csv')
+    csv_path = Path("/opt/airflow/data/csv/patients.csv")
     if csv_path.exists():
-        return 
-    
-    script_dir = Path(__file__).resolve().parent.parent
+        return
+
+    Path(__file__).resolve().parent.parent
     synthea_dir = Path("/opt/airflow/data")
     fhir_dir = synthea_dir / "fhir"
 
@@ -28,11 +29,13 @@ def _convert_fhir_to_csv():
         for entry in bundle.get("entry", []):
             r = entry.get("resource", {})
             if r.get("resourceType") == "Patient":
-                patients.append({
-                    "id": r.get("id"),
-                    "gender": r.get("gender"),
-                    "birthDate": r.get("birthDate")
-                })
+                patients.append(
+                    {
+                        "id": r.get("id"),
+                        "gender": r.get("gender"),
+                        "birthDate": r.get("birthDate"),
+                    }
+                )
 
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     with csv_path.open("w", newline="", encoding="utf-8") as f:
@@ -41,20 +44,21 @@ def _convert_fhir_to_csv():
             w.writeheader()
             w.writerows(patients)
 
+
 def transform_patients(**kwargs):
     """Transform patients data from CSV."""
     _convert_fhir_to_csv()
-    
-    csv_path = 'data/csv/patients.csv'
+
+    csv_path = "data/csv/patients.csv"
     records = csv_to_records(csv_path)
-    
+
     for record in records:
-        if record.get('birthDate'):
-            record['birthDate'] = datetime.fromisoformat(record['birthDate'])
-    
-    processed_path = Path('/opt/airflow/data/processed/patients.json')
+        if record.get("birthDate"):
+            record["birthDate"] = datetime.fromisoformat(record["birthDate"])
+
+    processed_path = Path("/opt/airflow/data/processed/patients.json")
     processed_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(processed_path, 'w') as f:
+    with open(processed_path, "w") as f:
         json.dump(records, f, default=str)
-    
+
     print(f"Transformed {len(records)} patient records")

@@ -1,4 +1,5 @@
-# Train baseline ML model on OpenFDA data to predict whether an adverse event is serious.
+# Train a baseline ML model on OpenFDA data to predict whether an adverse event
+# is serious.
 
 import os
 import pandas as pd
@@ -13,8 +14,7 @@ from sklearn.impute import SimpleImputer
 import joblib
 
 DB_URI = os.getenv(
-    "WAREHOUSE_DB_URI",
-    "postgresql+psycopg2://airflow:airflow@localhost:5432/airflow"
+    "WAREHOUSE_DB_URI", "postgresql+psycopg2://airflow:airflow@localhost:5432/airflow"
 )
 
 engine = create_engine(DB_URI)
@@ -37,13 +37,25 @@ categorical = ["patientsex", "reaction", "brand_name"]
 
 preprocessor = ColumnTransformer(
     transformers=[
-        ("num", Pipeline([
-            ("imputer", SimpleImputer(strategy="median")),
-        ]), numeric),
-        ("cat", Pipeline([
-            ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore"))
-        ]), categorical),
+        (
+            "num",
+            Pipeline(
+                [
+                    ("imputer", SimpleImputer(strategy="median")),
+                ]
+            ),
+            numeric,
+        ),
+        (
+            "cat",
+            Pipeline(
+                [
+                    ("imputer", SimpleImputer(strategy="most_frequent")),
+                    ("onehot", OneHotEncoder(handle_unknown="ignore")),
+                ]
+            ),
+            categorical,
+        ),
     ]
 )
 
@@ -53,10 +65,12 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # Model pipeline
-model = Pipeline(steps=[
-    ("preprocessor", preprocessor),
-    ("classifier", LogisticRegression(max_iter=1000))
-])
+model = Pipeline(
+    steps=[
+        ("preprocessor", preprocessor),
+        ("classifier", LogisticRegression(max_iter=1000)),
+    ]
+)
 
 print("Training model...")
 model.fit(X_train, y_train)

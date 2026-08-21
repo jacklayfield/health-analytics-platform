@@ -1,6 +1,5 @@
 import os
 import json
-import shutil
 import logging
 from typing import Optional, List
 
@@ -12,12 +11,12 @@ logging.basicConfig(level=logging.INFO)
 
 def _read_json_or_ndjson(path: str) -> List[dict]:
     """Read a JSON file (array or object) or NDJSON and return a list of records."""
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, "r", encoding="utf-8") as f:
         text = f.read().strip()
         if not text:
             return []
         # NDJSON heuristics: multiple lines that start with '{'
-        if '\n' in text and text.lstrip().startswith('{'):
+        if "\n" in text and text.lstrip().startswith("{"):
             items = []
             for line in text.splitlines():
                 line = line.strip()
@@ -37,9 +36,13 @@ def _read_json_or_ndjson(path: str) -> List[dict]:
 
 def _convert_candidate_to_json(path: str) -> List[dict]:
     lower = path.lower()
-    if lower.endswith('.json') or lower.endswith('.ndjson') or lower.endswith('.ndjsonl'):
+    if (
+        lower.endswith(".json")
+        or lower.endswith(".ndjson")
+        or lower.endswith(".ndjsonl")
+    ):
         return _read_json_or_ndjson(path)
-    if lower.endswith('.csv'):
+    if lower.endswith(".csv"):
         return csv_to_records(path)
     raise ValueError(f"Unsupported candidate file type: {path}")
 
@@ -77,7 +80,7 @@ def prepare_resource(
                 continue
             try:
                 records = _convert_candidate_to_json(cand)
-                with open(output_path, 'w', encoding='utf-8') as dst:
+                with open(output_path, "w", encoding="utf-8") as dst:
                     json.dump(records, dst)
                 logger.info("Normalized %s -> %s", cand, output_path)
                 return output_path
@@ -85,13 +88,19 @@ def prepare_resource(
                 logger.exception("Failed to convert candidate %s", cand)
 
     # Fallback: look for resource file at raw root
-    candidates = sorted([f for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))])
+    candidates = sorted(
+        [f for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
+    )
     for fname in candidates:
-        if fname.lower() in (f"{resource}.json", f"{resource}.ndjson", f"{resource}.csv"):
+        if fname.lower() in (
+            f"{resource}.json",
+            f"{resource}.ndjson",
+            f"{resource}.csv",
+        ):
             path = os.path.join(input_dir, fname)
             try:
                 records = _convert_candidate_to_json(path)
-                with open(output_path, 'w', encoding='utf-8') as dst:
+                with open(output_path, "w", encoding="utf-8") as dst:
                     json.dump(records, dst)
                 logger.info("Normalized %s -> %s", path, output_path)
                 return output_path
@@ -99,18 +108,18 @@ def prepare_resource(
                 logger.exception("Failed to convert root candidate %s", path)
 
     # Nothing found — for patients create a small sample, otherwise create empty list
-    if resource == 'patients':
+    if resource == "patients":
         sample = [
             {"id": "patient-1", "birthDate": "1970-01-01", "gender": "female"},
             {"id": "patient-2", "birthDate": "1985-05-12", "gender": "male"},
         ]
-        with open(output_path, 'w', encoding='utf-8') as dst:
+        with open(output_path, "w", encoding="utf-8") as dst:
             json.dump(sample, dst, indent=2)
         logger.info("Wrote sample patients to %s", output_path)
         return output_path
 
     # create an empty JSON array for other resources
-    with open(output_path, 'w', encoding='utf-8') as dst:
+    with open(output_path, "w", encoding="utf-8") as dst:
         json.dump([], dst)
     logger.info("Wrote empty resource file %s", output_path)
     return output_path

@@ -1,4 +1,5 @@
-# Train a Random Forest classifier to predict whether an adverse event is serious (2) or not (1)
+# Train a Random Forest classifier to predict whether an adverse event is
+# serious (2) or not (1).
 
 from pathlib import Path
 from sklearn.pipeline import Pipeline
@@ -9,6 +10,7 @@ import joblib
 
 from pipelines.common.data_utils import load_openfda_events
 from pipelines.common.preprocessing import make_preprocessor
+
 
 def main():
     df = load_openfda_events()
@@ -26,16 +28,21 @@ def main():
     preprocessor = make_preprocessor(numeric, categorical)
 
     # Model
-    model = Pipeline([
-        ("preprocessor", preprocessor),
-        ("classifier", RandomForestClassifier(
-            n_estimators=300,
-            max_depth=None,
-            class_weight="balanced",
-            random_state=42,
-            n_jobs=-1
-        ))
-    ])
+    model = Pipeline(
+        [
+            ("preprocessor", preprocessor),
+            (
+                "classifier",
+                RandomForestClassifier(
+                    n_estimators=300,
+                    max_depth=None,
+                    class_weight="balanced",
+                    random_state=42,
+                    n_jobs=-1,
+                ),
+            ),
+        ]
+    )
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y

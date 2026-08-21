@@ -2,6 +2,7 @@ import json
 import pandas as pd
 import os
 
+
 def clean_first_value(value):
     """Safely extract and clean the first item of a list, if present."""
     if isinstance(value, list) and value:
@@ -10,9 +11,10 @@ def clean_first_value(value):
         return value.strip()
     return None
 
+
 def transform_openfda_data(
     input_path="/opt/airflow/data/raw/events.json",
-    output_path="/opt/airflow/data/processed/events.csv"
+    output_path="/opt/airflow/data/processed/events.csv",
 ):
     print(f"Transforming data from {input_path}...")
 
@@ -28,7 +30,7 @@ def transform_openfda_data(
             "receivedate": report.get("receivedate"),
             "serious": report.get("serious"),
             "patientonsetage": report.get("patient", {}).get("patientonsetage"),
-            "patientsex": report.get("patient", {}).get("patientsex")
+            "patientsex": report.get("patient", {}).get("patientsex"),
         }
 
         reactions = report.get("patient", {}).get("reaction", [])
@@ -40,15 +42,21 @@ def transform_openfda_data(
             for drug in drugs:
                 openfda = drug.get("openfda", {})
 
-                rows.append({
-                    **base,
-                    "reaction": reaction_name.strip() if reaction_name else None,
-                    "medicinalproduct": drug.get("medicinalproduct", "").strip(),
-                    "drugauthorizationnumb": drug.get("drugauthorizationnumb", "").strip(),
-                    "brand_name": clean_first_value(openfda.get("brand_name")),
-                    "manufacturer_name": clean_first_value(openfda.get("manufacturer_name")),
-                    "product_ndc": clean_first_value(openfda.get("product_ndc"))
-                })
+                rows.append(
+                    {
+                        **base,
+                        "reaction": reaction_name.strip() if reaction_name else None,
+                        "medicinalproduct": drug.get("medicinalproduct", "").strip(),
+                        "drugauthorizationnumb": drug.get(
+                            "drugauthorizationnumb", ""
+                        ).strip(),
+                        "brand_name": clean_first_value(openfda.get("brand_name")),
+                        "manufacturer_name": clean_first_value(
+                            openfda.get("manufacturer_name")
+                        ),
+                        "product_ndc": clean_first_value(openfda.get("product_ndc")),
+                    }
+                )
 
     df = pd.DataFrame(rows)
 
@@ -58,7 +66,7 @@ def transform_openfda_data(
             "safetyreportid",
             "reaction",
             "medicinalproduct",
-            "drugauthorizationnumb"
+            "drugauthorizationnumb",
         ]
     )
 
