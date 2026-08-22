@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Optional, List
 
-from etl.airflow.etl.synthea.utils import csv_to_records
+from etl.synthea.utils import csv_to_records
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

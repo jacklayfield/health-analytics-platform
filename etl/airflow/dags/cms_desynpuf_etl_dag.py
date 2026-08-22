@@ -1,6 +1,5 @@
 # CMS DE-SynPUF DAG
 
-from etl.cms_desynpuf.extract import extract_cms_desynpuf
 from datetime import datetime
 import sys
 
@@ -9,6 +8,7 @@ from airflow.operators.python import PythonOperator
 
 sys.path.append("/opt/airflow")
 
+from etl.cms_desynpuf.extract import extract_cms_desynpuf
 
 default_args = {
     "owner": "airflow",

@@ -1,8 +1,5 @@
 # Synthea DAG
 
-from etl.synthea.load.postgres import load_patients
-from etl.synthea.transform.patients import transform_patients
-from etl.synthea.extract.synthea import extract_synthea
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
@@ -10,6 +7,9 @@ import sys
 
 sys.path.append("/opt/airflow")
 
+from etl.synthea.load.postgres import load_patients
+from etl.synthea.transform.patients import transform_patients
+from etl.synthea.extract.synthea import extract_synthea
 
 default_args = {
     "owner": "airflow",

@@ -1,8 +1,5 @@
 # OpenFDA dag
 
-from etl.openfda.load import load_openfda_data
-from etl.openfda.transform import transform_openfda_data
-from etl.openfda.extract import download_openfda_data
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
@@ -10,6 +7,9 @@ import sys
 
 sys.path.append("/opt/airflow")
 
+from etl.openfda.load import load_openfda_data
+from etl.openfda.transform import transform_openfda_data
+from etl.openfda.extract import download_openfda_data
 
 default_args = {
     "owner": "airflow",
