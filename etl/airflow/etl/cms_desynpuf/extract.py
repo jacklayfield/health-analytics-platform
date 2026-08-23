@@ -85,8 +85,8 @@ def extract_archive(
 
 
 def extract_cms_desynpuf(
-    config_path: str = "/opt/airflow/dags/config/cms_desynpuf.yaml",
-    raw_root: str = "/opt/airflow/etl/cms_desynpuf/config/cms_desynpuf.yaml",
+    config_path: str = "/opt/airflow/etl/cms_desynpuf/config/cms_desynpuf.yaml",
+    raw_root: str = "/opt/airflow/data/raw/cms_desynpuf",
     **kwargs,
 ):
     """Download and extract CMS DE-SynPUF files defined in YAML config."""
