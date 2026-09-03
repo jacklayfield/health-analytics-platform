@@ -10,6 +10,7 @@ sys.path.append("/opt/airflow")
 
 from etl.cms_desynpuf.extract import extract_cms_desynpuf
 from etl.cms_desynpuf.transform import transform_cms_desynpuf
+from etl.cms_desynpuf.load import load_cms_desynpuf
 
 default_args = {
     "owner": "airflow",
@@ -34,4 +35,9 @@ with DAG(
         python_callable=transform_cms_desynpuf,
     )
 
-    extract_cms_task >> transform_cms_task
+    load_cms_task = PythonOperator(
+        task_id="load_cms_desynpuf",
+        python_callable=load_cms_desynpuf,
+    )
+
+    extract_cms_task >> transform_cms_task >> load_cms_task

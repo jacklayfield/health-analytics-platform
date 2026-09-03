@@ -8,8 +8,8 @@ class PostgresLoader(DataLoader):
         self.db_uri = db_uri
         self.table_name = table_name
 
-    def load(self, df: pd.DataFrame):
+    def load(self, df: pd.DataFrame, if_exists: str = "replace"):
         engine = create_engine(self.db_uri)
         with engine.begin() as conn:
-            df.to_sql(self.table_name, conn, if_exists="replace", index=False)
+            df.to_sql(self.table_name, conn, if_exists=if_exists, index=False)
         print(f"Loaded {len(df)} rows into {self.table_name}")
