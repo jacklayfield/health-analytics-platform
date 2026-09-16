@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 DATE_COLUMNS = {
     "BENE_BIRTH_DT",
     "BENE_DEATH_DT",

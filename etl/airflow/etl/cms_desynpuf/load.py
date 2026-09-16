@@ -18,9 +18,7 @@ def load_cms_desynpuf(
     input_paths = sorted(input_dir.glob("*.csv"))
 
     if not input_paths:
-        raise FileNotFoundError(
-            f"No transformed CMS CSV files found under {input_dir}"
-        )
+        raise FileNotFoundError(f"No transformed CMS CSV files found under {input_dir}")
 
     if warehouse not in {"postgres", "snowflake"}:
         raise ValueError(f"Unknown warehouse: {warehouse}")
