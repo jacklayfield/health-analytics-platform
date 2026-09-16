@@ -4,6 +4,18 @@ data:
   tables:
     openfda_events: "openfda_events"
     synthea_events: "synthea_events"
+
+datasets:
+  openfda:
+    table: "openfda_events"
+    schema_version: "1"
+    entity_level: "adverse_event"
+    tasks: ["serious_prediction", "reaction_prediction"]
+  synthea:
+    table: "synthea_events"
+    schema_version: "1"
+    entity_level: "patient_encounter"
+    tasks: []
   
 features:
   serious_prediction:

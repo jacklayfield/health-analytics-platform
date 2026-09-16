@@ -113,6 +113,18 @@ Train all models for serious event prediction:
 python -m src.cli.main train serious_prediction
 ```
 
+Training is dataset-first. OpenFDA is the default dataset, and a dataset can be
+selected explicitly when more dataset pipelines are enabled:
+
+```bash
+python -m src.cli.main train serious_prediction --dataset openfda
+```
+
+Dataset metadata is defined in `config/config.yaml`, including the warehouse
+table, schema version, entity grain, and supported tasks. Synthea is registered
+there, but its task list remains empty until its patient/encounter feature view
+is implemented.
+
 Train with hyperparameter optimization:
 
 ```bash

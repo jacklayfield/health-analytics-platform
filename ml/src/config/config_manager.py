@@ -22,6 +22,16 @@ class DataConfig:
 
 
 @dataclass
+class DatasetConfig:
+    """Configuration and ownership metadata for a training dataset."""
+
+    table: str
+    schema_version: str
+    entity_level: str
+    tasks: list[str]
+
+
+@dataclass
 class FeatureConfig:
     """Feature configuration for a specific task."""
 
@@ -89,6 +99,7 @@ class MLConfig:
     """Main ML pipeline configuration."""
 
     data: DataConfig
+    datasets: Dict[str, DatasetConfig]
     features: Dict[str, FeatureConfig]
     models: Dict[str, ModelConfig]
     training: TrainingConfig
@@ -166,6 +177,10 @@ class ConfigManager:
         """Create configuration objects from dictionary."""
         return MLConfig(
             data=DataConfig(**config_dict["data"]),
+            datasets={
+                name: DatasetConfig(**dataset_config)
+                for name, dataset_config in config_dict["datasets"].items()
+            },
             features={
                 name: FeatureConfig(**feat_config)
                 for name, feat_config in config_dict["features"].items()
@@ -209,6 +224,21 @@ class ConfigManager:
         if task_name not in self._config.features:
             raise KeyError(f"Feature configuration not found for task: {task_name}")
         return self._config.features[task_name]
+
+    def get_dataset_config(self, dataset_name: str) -> DatasetConfig:
+        """Get configuration for a named dataset."""
+        if dataset_name not in self._config.datasets:
+            raise KeyError(f"Dataset configuration not found: {dataset_name}")
+        return self._config.datasets[dataset_name]
+
+    def validate_dataset_task(self, dataset_name: str, task_name: str) -> None:
+        """Ensure a task is explicitly supported by a dataset."""
+        dataset = self.get_dataset_config(dataset_name)
+        if task_name not in dataset.tasks:
+            raise ValueError(
+                f"Task '{task_name}' is not configured for dataset '{dataset_name}'. "
+                f"Available tasks: {dataset.tasks}"
+            )
 
     def get_model_config(self, task_name: str) -> ModelConfig:
         """Get model configuration for a specific task."""

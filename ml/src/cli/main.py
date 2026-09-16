@@ -21,7 +21,7 @@ def train_command(args):
 
     try:
         # Initialize trainer
-        trainer = MLTrainer(task_name=args.task)
+        trainer = MLTrainer(task_name=args.task, dataset_name=args.dataset)
 
         # Run training pipeline
         results = trainer.run_full_pipeline(
@@ -74,7 +74,7 @@ def optimize_command(args):
 
     try:
         # Initialize trainer
-        trainer = MLTrainer(task_name=args.task)
+        trainer = MLTrainer(task_name=args.task, dataset_name=args.dataset)
 
         # Load data
         X_train, X_test, y_train, y_test = trainer.load_and_prepare_data(
@@ -117,6 +117,13 @@ def show_config():
         print(f"Data Warehouse URI: {config.data.warehouse_uri}")
         print(f"MLflow Tracking URI: {config.mlflow.tracking_uri}")
         print(f"MLflow Experiment: {config.mlflow.experiment_name}")
+
+        print("\nAvailable Datasets:")
+        for dataset_name, dataset_config in config.datasets.items():
+            print(f"  - {dataset_name} ({dataset_config.entity_level})")
+            print(f"    Table: {dataset_config.table}")
+            print(f"    Schema: {dataset_config.schema_version}")
+            print(f"    Tasks: {', '.join(dataset_config.tasks) or 'none'}")
 
         print("\nAvailable Tasks:")
         for task_name, task_config in config.features.items():
@@ -204,6 +211,8 @@ def print_training_summary(results: Dict[str, Any]):
     """Print training summary."""
     print("\nTraining Summary")
     print("=" * 50)
+    if "dataset_name" in results:
+        print(f"Dataset: {results['dataset_name']}")
     print(f"Task: {results['task_name']}")
     print(
         f"Data: {results['data_info']['train_samples']} train, "
@@ -255,7 +264,10 @@ Examples:
     train_parser = subparsers.add_parser("train", help="Train ML models")
     train_parser.add_argument("task", help="Task name (e.g., serious_prediction)")
     train_parser.add_argument(
-        "--table", default="openfda_events", help="Data table name"
+        "--dataset", default="openfda", help="Named dataset (default: openfda)"
+    )
+    train_parser.add_argument(
+        "--table", help="Data table override for backwards compatibility"
     )
     train_parser.add_argument("--filters", help="Data filters (key=value,key2=value2)")
     train_parser.add_argument(
@@ -279,7 +291,12 @@ Examples:
     # Optimize command
     opt_parser = subparsers.add_parser("optimize", help="Optimize hyperparameters")
     opt_parser.add_argument("task", help="Task name")
-    opt_parser.add_argument("--table", default="openfda_events", help="Data table name")
+    opt_parser.add_argument(
+        "--dataset", default="openfda", help="Named dataset (default: openfda)"
+    )
+    opt_parser.add_argument(
+        "--table", help="Data table override for backwards compatibility"
+    )
     opt_parser.add_argument(
         "--trials", type=int, default=100, help="Number of optimization trials"
     )

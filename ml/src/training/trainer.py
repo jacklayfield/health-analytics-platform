@@ -34,6 +34,7 @@ class MLTrainer:
     def __init__(
         self,
         task_name: str,
+        dataset_name: str = "openfda",
         feature_config: Optional[FeatureConfig] = None,
         model_config: Optional[ModelConfig] = None,
         training_config: Optional[TrainingConfig] = None,
@@ -49,6 +50,9 @@ class MLTrainer:
         """
         self.task_name = task_name
         self.config = config_manager.load_config()
+        self.dataset_name = dataset_name
+        self.config.validate_dataset_task(dataset_name, task_name)
+        self.dataset_config = self.config.get_dataset_config(dataset_name)
 
         self.feature_config = feature_config or self.config.features[task_name]
         self.model_config = model_config or self.config.models[task_name]
@@ -63,7 +67,7 @@ class MLTrainer:
 
     def load_and_prepare_data(
         self,
-        table_name: str = "openfda_events",
+        table_name: Optional[str] = None,
         filters: Optional[Dict[str, Any]] = None,
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
         """
@@ -76,7 +80,10 @@ class MLTrainer:
         Returns:
             Tuple of (X_train, X_test, y_train, y_test)
         """
-        logger.info(f"Loading data for task: {self.task_name}")
+        table_name = table_name or self.dataset_config.table
+        logger.info(
+            f"Loading data for dataset '{self.dataset_name}', task: {self.task_name}"
+        )
 
         # Load data
         df = self.data_loader.load_data(table_name, filters=filters)
@@ -186,6 +193,7 @@ class MLTrainer:
             # Log parameters
             experiment_tracker.log_parameters(
                 {
+                    "dataset_name": self.dataset_name,
                     "task_name": self.task_name,
                     "model_name": model_name,
                     "algorithm": model_config["class"],
@@ -359,7 +367,7 @@ class MLTrainer:
             # Save comparison
             comparison_path = (
                 Path(self.config.paths.artifacts)
-                / f"{self.task_name}_model_comparison.csv"
+                / f"{self.dataset_name}__{self.task_name}_model_comparison.csv"
             )
             comparison_df.to_csv(comparison_path, index=False)
 
@@ -395,7 +403,9 @@ class MLTrainer:
         models_dir = Path(self.config.paths.models)
         models_dir.mkdir(parents=True, exist_ok=True)
 
-        model_path = models_dir / f"{self.task_name}_{model_name}.joblib"
+        model_path = models_dir / (
+            f"{self.dataset_name}__{self.task_name}__{model_name}.joblib"
+        )
         joblib.dump(model, model_path)
 
         logger.info(f"Model saved to: {model_path}")
@@ -403,7 +413,7 @@ class MLTrainer:
 
     def run_full_pipeline(
         self,
-        table_name: str = "openfda_events",
+        table_name: Optional[str] = None,
         filters: Optional[Dict[str, Any]] = None,
         optimize_hyperparams: bool = False,
     ) -> Dict[str, Any]:
@@ -437,6 +447,7 @@ class MLTrainer:
             logger.info(f"Full pipeline completed for task: {self.task_name}")
 
             return {
+                "dataset_name": self.dataset_name,
                 "task_name": self.task_name,
                 "data_info": {
                     "train_samples": len(X_train),
