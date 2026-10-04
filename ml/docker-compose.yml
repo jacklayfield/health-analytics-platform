@@ -1,27 +1,49 @@
 version: '3.8'
 
 services:
+  mlflow-db:
+    image: postgres:16-alpine
+    container_name: mlflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${MLFLOW_DB_NAME:-mlflow}
+      POSTGRES_USER: ${MLFLOW_DB_USER:-mlflow}
+      POSTGRES_PASSWORD: ${MLFLOW_DB_PASSWORD:-mlflow-dev-only}
+    volumes:
+      - mlflow_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${MLFLOW_DB_USER:-mlflow} -d ${MLFLOW_DB_NAME:-mlflow}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - health-net
+
   # MLflow Tracking Server
   mlflow:
     env_file: .env
     build:
-      context: ./ml
+      context: .
       dockerfile: Dockerfile.mlflow
     container_name: mlflow-server
     ports:
       - "5000:5000"
     volumes:
       - mlflow_data:/mlflow
+    depends_on:
+      mlflow-db:
+        condition: service_healthy
     command: >
-      mlflow server
-        --backend-store-uri sqlite:///mlflow.db
-        --default-artifact-root /mlflow/artifacts
+      sh -c 'mlflow server
+        --backend-store-uri "postgresql+psycopg2://${MLFLOW_DB_USER:-mlflow}:${MLFLOW_DB_PASSWORD:-mlflow-dev-only}@mlflow-db:5432/${MLFLOW_DB_NAME:-mlflow}"
+        --artifacts-destination "${MLFLOW_ARTIFACTS_DESTINATION:-/mlflow/artifacts}"
+        --serve-artifacts
         --host 0.0.0.0
         --port 5000
         --cors-allowed-origins "*"
-        --allowed-hosts "*"
+        --allowed-hosts "*"'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:5000/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -30,46 +52,48 @@ services:
 
   # ML Pipeline API Server
   ml-api:
-    env_file: .env
     build:
-      context: ./ml
+      context: .
       target: production
     container_name: ml-api-server
     ports:
       - "8000:8000"
     environment:
-      - WAREHOUSE_DB_URI=${WAREHOUSE_DB_URI}
-      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
-      - PYTHONPATH=/app
+      WAREHOUSE_DB_URI: ${WAREHOUSE_DB_URI:-postgresql+psycopg2://airflow:airflow@postgres:5432/airflow}
+      MLFLOW_TRACKING_URI: ${MLFLOW_TRACKING_URI:-http://mlflow:5000}
+      MLFLOW_MODEL_URI: ${MLFLOW_MODEL_URI:-}
+      PYTHONPATH: /app
     volumes:
-      - ./ml:/app
-      - ./ml/models:/app/models
-      - ./ml/logs:/app/logs
-      - ./ml/artifacts:/app/artifacts
-      - ./ml/config:/app/config
+      - .:/app
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - ./artifacts:/app/artifacts
+      - ./config:/app/config
     working_dir: /app
-    command: bash -c "pip install --no-cache-dir optuna[mlflow] optuna-integration[mlflow] mlflow pandas scikit-learn joblib psycopg2-binary fastapi uvicorn && uvicorn src.serving.model_server:create_app --host 0.0.0.0 --port 8000"
+    command: uvicorn src.serving.model_server:create_app --factory --host 0.0.0.0 --port 8000
+    depends_on:
+      mlflow:
+        condition: service_healthy
     networks:
       - health-net
     user: root
 
   # Jupyter Notebook for development
   jupyter:
-    env_file: .env
     build:
-      context: ./ml
+      context: .
       target: development
     container_name: ml-jupyter
     ports:
       - "8888:8888"
     environment:
-      - WAREHOUSE_DB_URI=${WAREHOUSE_DB_URI}
-      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
+      WAREHOUSE_DB_URI: ${WAREHOUSE_DB_URI:-postgresql+psycopg2://airflow:airflow@postgres:5432/airflow}
+      MLFLOW_TRACKING_URI: ${MLFLOW_TRACKING_URI:-http://mlflow:5000}
     volumes:
-      - ./ml:/app
+      - .:/app
       - jupyter_data:/home/jovyan/work
     command: >
-      bash -c "pip install jupyter && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''"
+      jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''
     depends_on:
       - mlflow
     networks:
@@ -77,11 +101,10 @@ services:
 
 volumes:
   mlflow_data:
-  postgres_data:
+  mlflow_db_data:
   jupyter_data:
 
 networks:
   health-net:
     external: true
     name: health-net
-

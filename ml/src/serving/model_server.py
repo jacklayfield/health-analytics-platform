@@ -3,15 +3,19 @@ Model serving infrastructure using FastAPI.
 """
 
 import joblib
+import mlflow
 import pandas as pd
 from typing import Dict, Any, List, Optional, Union
 from pathlib import Path
 from datetime import datetime
+import os
+import re
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uvicorn
+from mlflow.tracking import MlflowClient
 
 from ..config.config_manager import config_manager
 from ..utils.logger import get_logger
@@ -37,6 +41,7 @@ class PredictionResponse(BaseModel):
         None, description="Prediction probabilities"
     )
     model_name: str = Field(..., description="Name of the model used")
+    model_version: Optional[str] = Field(None, description="Registered model version")
     timestamp: str = Field(..., description="Prediction timestamp")
     confidence: Optional[float] = Field(None, description="Prediction confidence")
 
@@ -45,6 +50,7 @@ class ModelInfo(BaseModel):
     """Model information response."""
 
     name: str
+    model_version: Optional[str] = None
     task_type: str
     algorithm: str
     training_date: Optional[str]
@@ -95,6 +101,9 @@ class ModelServer:
         self.models_dir = Path(models_dir)
         self.models: Dict[str, Any] = {}
         self.model_info: Dict[str, Dict[str, Any]] = {}
+        self.model_uri = os.getenv("MLFLOW_MODEL_URI")
+        self.tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+        mlflow.set_tracking_uri(self.tracking_uri)
 
         # Setup routes
         self._setup_routes()
@@ -123,6 +132,7 @@ class ModelServer:
                 model_list.append(
                     ModelInfo(
                         name=name,
+                        model_version=info.get("model_version"),
                         task_type=info.get("task_type", "unknown"),
                         algorithm=info.get("algorithm", "unknown"),
                         training_date=info.get("training_date"),
@@ -187,11 +197,14 @@ class ModelServer:
                         else str(prediction)
                     ),
                     probabilities=probabilities,
-                    model_name=model_name,
+                    model_name=self.model_info[model_name].get("registry_name", model_name),
+                    model_version=self.model_info[model_name].get("model_version"),
                     timestamp=datetime.now().isoformat(),
                     confidence=confidence,
                 )
 
+            except HTTPException:
+                raise
             except Exception as e:
                 logger.error(f"Prediction error: {e}")
                 raise HTTPException(status_code=500, detail=str(e))
@@ -242,6 +255,10 @@ class ModelServer:
 
     def _load_models(self):
         """Load all available models."""
+        if self.model_uri:
+            self._load_registered_model(self.model_uri)
+            return
+
         if not self.models_dir.exists():
             logger.warning(f"Models directory does not exist: {self.models_dir}")
             return
@@ -254,6 +271,40 @@ class ModelServer:
                 self._load_model(model_name)
             except Exception as e:
                 logger.error(f"Failed to load model {model_name}: {e}")
+
+    def _load_registered_model(self, model_uri: str) -> None:
+        """Load a specific registered MLflow model alias or version."""
+        match = re.fullmatch(r"models:/(.+?)(?:@([^/]+)|/(\d+))", model_uri)
+        if match is None:
+            raise ValueError(
+                "MLFLOW_MODEL_URI must use models:/<name>@<alias> "
+                "or models:/<name>/<version>"
+            )
+
+        registry_name, alias, explicit_version = match.groups()
+        client = MlflowClient(tracking_uri=self.tracking_uri)
+        if alias:
+            version = client.get_model_version_by_alias(registry_name, alias).version
+            model_key = f"{registry_name}@{alias}"
+        else:
+            version = explicit_version
+            model_key = f"{registry_name}@{version}"
+
+        versioned_model_uri = f"models:/{registry_name}/{version}"
+        model = self._load_mlflow_model(versioned_model_uri)
+        self.models[model_key] = model
+        self.model_info[model_key] = {
+            "registry_name": registry_name,
+            "model_version": str(version),
+            "task_type": "unknown",
+            "algorithm": "MLflow model",
+            "training_date": None,
+            "features": [],
+        }
+
+    def _load_mlflow_model(self, model_uri: str):
+        """Load a model artifact through MLflow."""
+        return mlflow.pyfunc.load_model(model_uri)
 
     def _load_model(self, model_name: str):
         """Load a specific model."""

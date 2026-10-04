@@ -102,15 +102,16 @@ class ExperimentTracker:
             Model URI
         """
         try:
-            model_uri = mlflow.sklearn.log_model(
+            model_info = mlflow.sklearn.log_model(
                 sk_model=model,
                 artifact_path=model_name,
                 signature=signature,
                 input_example=input_example,
                 metadata=metadata,
             )
+            model_uri = getattr(model_info, "model_uri", model_info)
             logger.info(f"Logged model: {model_name}")
-            return model_uri
+            return str(model_uri)
         except Exception as e:
             logger.error(f"Failed to log model {model_name}: {e}")
             raise
@@ -212,6 +213,7 @@ class ExperimentTracker:
         version: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[Dict[str, str]] = None,
+        alias: Optional[str] = None,
     ) -> str:
         """
         Register model in MLflow model registry.
@@ -238,8 +240,16 @@ class ExperimentTracker:
                     description=description,
                 )
 
+            if alias:
+                self.client.set_registered_model_alias(
+                    name=model_name,
+                    alias=alias,
+                    version=registered_model.version,
+                )
+
             logger.info(
                 f"Registered model: {model_name} (version {registered_model.version})"
+                + (f" with alias '{alias}'" if alias else "")
             )
             return registered_model.version
 

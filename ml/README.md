@@ -162,32 +162,56 @@ curl -X POST "http://localhost:8080/predict" \
 
 ### Start MLflow Server
 
+The Compose stack runs MLflow with PostgreSQL metadata and a persistent local
+artifact volume. From the repository's `ml/` directory:
+
 ```bash
-mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
+docker compose up --build -d mlflow-db mlflow
 ```
 
-### View Experiments
+The `mlflow_db_data` and `mlflow_data` Docker volumes survive container
+recreation. Back them up before treating this as production storage.
 
-Open [http://localhost:5000](http://localhost:5000) in your browser to view:
+By default, artifacts stay on the MLflow volume, so no S3 account is needed.
+To switch to an S3-compatible store later, set `MLFLOW_ARTIFACTS_DESTINATION`
+to an `s3://<bucket>` URI and configure `MLFLOW_S3_ENDPOINT_URL` and AWS
+credentials in the MLflow environment. The MLflow image includes the S3 client.
 
-* Experiment runs and metrics
-* Model artifacts and versions
-* Model registry and staging
+### Register and Serve a Model
 
-### Register Models
+Training registers each evaluated model under a name of the form
+`health_models_<dataset>_<task>_<algorithm>` and assigns its latest version the
+`candidate` alias. For example:
 
-Models are automatically registered in MLflow during training. You can also manually register:
+```text
+models:/health_models_openfda_serious_prediction_random_forest@candidate
+```
+
+Candidates are not automatically promoted to `champion`. After reviewing a
+version in the MLflow UI at [http://localhost:5000](http://localhost:5000),
+promote it explicitly:
 
 ```python
-from src.experiments.experiment_tracker import experiment_tracker
+from mlflow import MlflowClient
 
-model_uri = "runs:/<run_id>/model"
-version = experiment_tracker.register_model(
-    model_uri=model_uri,
-    model_name="serious_prediction_model",
-    description="Best performing model for serious event prediction"
+client = MlflowClient(tracking_uri="http://localhost:5000")
+client.set_registered_model_alias(
+  name="health_models_openfda_serious_prediction_random_forest",
+  alias="champion",
+  version="1",
 )
 ```
+
+Set `MLFLOW_MODEL_URI` in `ml/.env` to the chosen alias, then start or reload the
+API service:
+
+```text
+MLFLOW_MODEL_URI=models:/health_models_openfda_serious_prediction_random_forest@champion
+```
+
+The API resolves the alias to a concrete version at startup and reports that
+version with predictions. After changing the alias, reload the API model or
+recreate the `ml-api` container to pick up the promoted version.
 
 ## Configuration
 

@@ -12,6 +12,8 @@ from sklearn.impute import SimpleImputer
 import joblib
 from pathlib import Path
 import importlib
+import re
+import mlflow
 
 from ..config.config_manager import (
     config_manager,
@@ -284,12 +286,30 @@ class MLTrainer:
             model_uri = experiment_tracker.log_model(
                 model=model,
                 model_name=model_name,
+                signature=mlflow.models.infer_signature(
+                    X_train.head(), model.predict(X_train.head())
+                ),
+                input_example=X_train.head(),
                 metadata={
                     "task_name": self.task_name,
                     "algorithm": model_config["class"],
                     "training_samples": len(X_train),
                     "test_samples": len(X_test),
                 },
+            )
+            registered_model_name = self._registered_model_name(model_name)
+            registered_model_version = experiment_tracker.register_model(
+                model_uri=f"runs:/{run.info.run_id}/{model_name}",
+                model_name=registered_model_name,
+                description=(
+                    f"{self.dataset_name} {self.task_name} model: {model_name}"
+                ),
+                tags={
+                    "dataset": self.dataset_name,
+                    "task": self.task_name,
+                    "algorithm": model_name,
+                },
+                alias="candidate",
             )
 
             # Store results
@@ -299,12 +319,27 @@ class MLTrainer:
                 "evaluation": evaluation_results,
                 "model_path": model_path,
                 "model_uri": model_uri,
+                "registered_model_name": registered_model_name,
+                "registered_model_version": registered_model_version,
                 "run_id": run.info.run_id,
             }
 
             logger.info(f"Model {model_name} training completed successfully")
 
             return self.results[model_name]
+
+    def _registered_model_name(self, model_name: str) -> str:
+        """Build a stable, task-specific MLflow registry name."""
+        name_parts = (
+            self.config.mlflow.model_registry_name,
+            self.dataset_name,
+            self.task_name,
+            model_name,
+        )
+        return "_".join(
+            re.sub(r"[^A-Za-z0-9_]+", "_", part).strip("_").lower()
+            for part in name_parts
+        )
 
     def train_all_models(
         self,
