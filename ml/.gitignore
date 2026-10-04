@@ -18,6 +18,7 @@ venv/
 
 # Models
 models/
+artifacts/
 
 NOTES.md
 

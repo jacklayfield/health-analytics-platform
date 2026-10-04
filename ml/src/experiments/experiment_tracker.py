@@ -10,6 +10,7 @@ from typing import Dict, Any, Optional, List
 import pandas as pd
 import numpy as np
 from pathlib import Path
+import re
 
 from ..config.config_manager import config_manager, MLflowConfig
 from ..utils.logger import get_logger
@@ -157,7 +158,8 @@ class ExperimentTracker:
 
         # Log as metrics
         for feature, importance in importance_dict.items():
-            mlflow.log_metric(f"feature_importance_{feature}", importance)
+            metric_feature = re.sub(r"[^A-Za-z0-9_.\-/ :]+", "_", feature)
+            mlflow.log_metric(f"feature_importance_{metric_feature}", importance)
 
         # Log as artifact
         importance_df = pd.DataFrame(
@@ -175,13 +177,16 @@ class ExperimentTracker:
         self,
         y_true: np.ndarray,
         y_pred: np.ndarray,
-        labels: Optional[List[str]] = None,
+        labels: Optional[List[Any]] = None,
         model_name: str = "model",
     ) -> None:
         """Log confusion matrix as artifact."""
         from sklearn.metrics import confusion_matrix
         import matplotlib.pyplot as plt
         import seaborn as sns
+
+        if labels is None:
+            labels = np.unique(np.concatenate((y_true, y_pred))).tolist()
 
         cm = confusion_matrix(y_true, y_pred, labels=labels)
 

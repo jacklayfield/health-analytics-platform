@@ -53,8 +53,8 @@ class MLTrainer:
         self.task_name = task_name
         self.config = config_manager.load_config()
         self.dataset_name = dataset_name
-        self.config.validate_dataset_task(dataset_name, task_name)
-        self.dataset_config = self.config.get_dataset_config(dataset_name)
+        config_manager.validate_dataset_task(dataset_name, task_name)
+        self.dataset_config = config_manager.get_dataset_config(dataset_name)
 
         self.feature_config = feature_config or self.config.features[task_name]
         self.model_config = model_config or self.config.models[task_name]
@@ -244,7 +244,7 @@ class MLTrainer:
             )
 
             # Train model
-            experiment_tracker.log_model_training(model_name)
+            logger.log_model_training(model_name)
             model.fit(X_train, y_train)
 
             # Evaluate model
@@ -259,7 +259,7 @@ class MLTrainer:
 
             # Log metrics
             experiment_tracker.log_metrics(evaluation_results["metrics"])
-            experiment_tracker.log_model_evaluation(
+            logger.log_model_evaluation(
                 model_name, evaluation_results["metrics"]
             )
 
@@ -420,18 +420,7 @@ class MLTrainer:
         self, preprocessor: ColumnTransformer, X: pd.DataFrame
     ) -> List[str]:
         """Get feature names after preprocessing."""
-        feature_names = []
-
-        # Numeric features
-        feature_names.extend(self.feature_config.numeric_features)
-
-        # Categorical features (after one-hot encoding)
-        for feature in self.feature_config.categorical_features:
-            if feature in X.columns:
-                unique_values = X[feature].dropna().unique()
-                feature_names.extend([f"{feature}_{val}" for val in unique_values])
-
-        return feature_names
+        return preprocessor.get_feature_names_out().tolist()
 
     def _save_model(self, model: Pipeline, model_name: str) -> str:
         """Save model to disk."""
